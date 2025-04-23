@@ -1,24 +1,59 @@
 import React, { useState, useEffect } from 'react';
 import { User, Phone, Mail, MapPin, Calendar, Activity, Droplet, Ruler, Weight, AlertTriangle, Heart, Phone as PhoneIcon } from 'lucide-react';
-import { useParams, useLocation } from 'react-router-dom';
+// import { useParams, useLocation } from 'react-router-dom';
+import loadToken from '../security';
 
 
 const PatientProfile = () => {
-    const {userId} = useParams();
-    const location = useLocation();
-
     const [profileData, setProfileData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [activeTab, setActiveTab] = useState('personal');
 
+
+    const fetchData = async (accessToken) => {
+        try {
+            const response = await fetch("http://localhost:8000/users/user-profile", {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Error while calling User Profile api http://localhost:8000/users/user-profile');
+            }
+
+            const data = await response.json();
+            console.log("login data after response.json", data);
+            return data;
+
+        } catch (error) {
+            throw error;
+        }
+    }
+
     useEffect(() => {
-        if (location.state && location.state.profileData) {
-            setProfileData(location.state.profileData);
-            setLoading(false);
+        console.log("inside useEffect!!");
+        const token = loadToken();
+        if (!token) {
+            return;
         }
 
-    }, [userId, location.state]);
+        fetchData(token)
+            .then(responseData => {
+                setProfileData(responseData);
+                setLoading(false);
+            })
+            .catch(error => {
+                console.error(error);
+                setError(error.message || "Error loading profile");
+                setLoading(false);
+            });
+
+    }, []);
 
     if (loading) {
         return (
@@ -44,7 +79,9 @@ const PatientProfile = () => {
 
     if (!profileData) return null;
 
-    const { user, patient } = profileData;
+    const { patient, ...user } = profileData;
+    console.log("profile data", profileData);
+    console.log("Logging patient and user", patient, user);
 
     const getGenderIcon = (gender) => {
         if (gender === 'MALE') return '♂️';

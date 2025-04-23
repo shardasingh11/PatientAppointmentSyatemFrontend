@@ -38,17 +38,6 @@ const Navbar = () => {
     window.location.href = '/';
   };
 
-  // For demo purposes - toggle login state
-  const simulateLogin = () => {
-    if (!isLoggedIn) {
-      const user = { username: 'JohnDoe' };
-      localStorage.setItem('user', JSON.stringify(user));
-      setIsLoggedIn(true);
-      setUsername(user.username);
-    } else {
-      handleLogout();
-    }
-  };
 
   return (
     <nav className="bg-gray-800 text-white shadow-lg">
@@ -126,13 +115,6 @@ const Navbar = () => {
               </div>
             )}
             
-            {/* Demo button to toggle login state - Remove in production */}
-            <button 
-              onClick={simulateLogin} 
-              className="py-2 px-4 bg-blue-600 hover:bg-blue-700 rounded text-sm"
-            >
-              {isLoggedIn ? 'Demo: Logout' : 'Demo: Login'}
-            </button>
           </div>
 
           {/* Mobile menu button */}
@@ -157,9 +139,9 @@ const Navbar = () => {
         
         {!isLoggedIn ? (
           <a 
-            href="/auth" 
+            href="/register" 
             className={`block py-2 px-4 text-sm hover:bg-gray-700 transition duration-300 ${
-              activePage === '/auth' ? 'bg-gray-700' : ''
+              activePage === '/register' ? 'bg-gray-700' : ''
             }`}
           >
             SignUp/SignIn
@@ -190,14 +172,7 @@ const Navbar = () => {
             </button>
           </>
         )}
-        
-        {/* Demo button for mobile - Remove in production */}
-        <button 
-          onClick={simulateLogin} 
-          className="block w-full text-left py-2 px-4 text-sm bg-blue-600 hover:bg-blue-700"
-        >
-          {isLoggedIn ? 'Demo: Logout' : 'Demo: Login'}
-        </button>
+      
       </div>
     </nav>
   );
