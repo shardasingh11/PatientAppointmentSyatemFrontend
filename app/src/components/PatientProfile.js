@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { User, Phone, Mail, MapPin, Calendar, Activity, Droplet, Ruler, Weight, AlertTriangle, Heart, Phone as PhoneIcon } from 'lucide-react';
-// import { useParams, useLocation } from 'react-router-dom';
-import loadToken from '../security';
+import { useAuth } from '../context/AuthContext';
+
 
 
 const PatientProfile = () => {
@@ -9,7 +9,7 @@ const PatientProfile = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [activeTab, setActiveTab] = useState('personal');
-
+    const { token } = useAuth();
 
     const fetchData = async (accessToken) => {
         try {
@@ -36,9 +36,9 @@ const PatientProfile = () => {
     }
 
     useEffect(() => {
-        console.log("inside useEffect!!");
-        const token = loadToken();
+        console.log("Token in PatientProfile", token);
         if (!token) {
+            setLoading(true);
             return;
         }
 
@@ -53,7 +53,7 @@ const PatientProfile = () => {
                 setLoading(false);
             });
 
-    }, []);
+    }, [token]);
 
     if (loading) {
         return (

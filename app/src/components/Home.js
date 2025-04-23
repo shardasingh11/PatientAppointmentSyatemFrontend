@@ -1,6 +1,8 @@
 import { Calendar, Clock, User, Check, Award, Shield } from 'lucide-react';
-
+import { useAuth } from '../context/AuthContext';
 const Home = () => {
+    const { isLoggedIn } = useAuth();
+
     return (
         <div className="max-w-6xl mx-auto px-4 py-8">
             {/* Hero Section */}
@@ -83,11 +85,11 @@ const Home = () => {
             {/* Call to Action */}
             <div className="mt-16 text-center">
 
-                <a href='/register'>
+                {!isLoggedIn && <a href='/register'>
                     <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow transition duration-300">
                         Register Now
                     </button>
-                </a>
+                </a>}
                 <p className="mt-4 text-gray-600">
                     Join thousands of patients who have simplified their healthcare experience
                 </p>

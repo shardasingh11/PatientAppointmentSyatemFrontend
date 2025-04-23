@@ -1,9 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {User, Lock} from 'lucide-react';
+import { User, Lock } from 'lucide-react';
+import { useAuth } from "../context/AuthContext.js";
+
+
 const LoginPage = () => {
 
     const navigate = useNavigate();
+    const { login } = useAuth();
 
     const [formData, setFormData] = useState({
         username: '',
@@ -16,25 +20,25 @@ const LoginPage = () => {
     });
 
     const validateForm = () => {
-         // Validate form
-         const newErrors = {};
-         if (!formData.username) {
-             newErrors.username = 'Username is required';
-         }
-         
-         if (!formData.password) {
-             newErrors.password = 'Password is required';
-         } else if (formData.password.length < 8) {
-             newErrors.password = 'Password must be at least 8 characters long';
-         }
-         
-         if (Object.keys(newErrors).length > 0) {
-             setErrors(newErrors);
-             return false;
-         }
+        // Validate form
+        const newErrors = {};
+        if (!formData.username) {
+            newErrors.username = 'Username is required';
+        }
 
-         return true;
-         
+        if (!formData.password) {
+            newErrors.password = 'Password is required';
+        } else if (formData.password.length < 4) {
+            newErrors.password = 'Password must be at least 8 characters long';
+        }
+
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            return false;
+        }
+
+        return true;
+
     }
 
     const handleChange = (e) => {
@@ -44,7 +48,7 @@ const LoginPage = () => {
             [name]: value
         });
 
-        if(errors[name]){
+        if (errors[name]) {
             setErrors({
                 ...errors,
                 [name]: ''
@@ -54,17 +58,17 @@ const LoginPage = () => {
 
     const handleLogin = async (e) => {
         e.preventDefault()
-        if(!validateForm()){
+        if (!validateForm()) {
             return;
         }
 
         try {
-            
+
             const reqData = new URLSearchParams();
 
             reqData.append("username", formData.username);
             reqData.append("password", formData.password);
-            const response = await fetch("http://localhost:8000/auth/token",{
+            const response = await fetch("http://localhost:8000/auth/token", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
@@ -72,27 +76,24 @@ const LoginPage = () => {
                 body: reqData,
             });
 
-            if(!response.ok){
+            if (!response.ok) {
                 const errorData = await response.json()
                 throw new Error(errorData.message || 'Login Failed');
-            }else{
+            } else {
+                const data = await response.json()
+                console.log(data.access_token);
+
+                const token = data.access_token;
+                login(token);
+
                 setTimeout(() => {
-                        console.log("inside setTimeout");
-                        navigate(`/patient-profile`);
-                      }, 1500);
+                    navigate(`/`);
+                }, 1500);
             }
 
-            const data = await response.json()
-            console.log(data.access_token);
-
-            const token = data.access_token;
-            localStorage.setItem("token", token);
-            console.log("My token", localStorage.getItem("token"));
-            
 
 
-
-        }catch(error){
+        } catch (error) {
             console.error('Registration error:', error);
 
         }
@@ -152,20 +153,20 @@ const LoginPage = () => {
                                 />
                             </div>
                             {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
-                            <p className="text-gray-500 text-sm mt-1">{errors.password ?"":"Password must be at least 8 characters long"}</p>
+                            <p className="text-gray-500 text-sm mt-1">{errors.password ? "" : "Password must be at least 8 characters long"}</p>
                         </div>
 
                         <div className="mt-6">
-                        <button 
-                            type="submit" 
-                            className="w-full bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600 transition duration-300"
-                        >
-                            Log In
-                        </button>
-                    </div>
+                            <button
+                                type="submit"
+                                className="w-full bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600 transition duration-300"
+                            >
+                                Log In
+                            </button>
+                        </div>
 
                     </div>
-                    
+
                 </form>
             </div>
         </div>

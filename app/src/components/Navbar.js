@@ -1,23 +1,15 @@
 import { useState, useEffect } from 'react';
 import { Menu, X, ChevronDown, LogOut, User } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
+  const { isLoggedIn, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [username, setUsername] = useState('');
+  const [username, setUsername] = useState('Jugal');
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [activePage, setActivePage] = useState('/');
 
-  // Simulate checking if user is logged in
   useEffect(() => {
-    // This would normally come from your auth system
-    const loggedInUser = localStorage.getItem('user');
-    if (loggedInUser) {
-      setIsLoggedIn(true);
-      setUsername(JSON.parse(loggedInUser).username);
-    }
-    
-    // Set active page based on current path
     setActivePage(window.location.pathname);
   }, []);
 
@@ -29,14 +21,7 @@ const Navbar = () => {
     setDropdownOpen(!dropdownOpen);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('user');
-    setIsLoggedIn(false);
-    setUsername('');
-    setDropdownOpen(false);
-    // Redirect to home page
-    window.location.href = '/';
-  };
+
 
 
   return (
@@ -83,9 +68,9 @@ const Navbar = () => {
                 {dropdownOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10">
                     <a 
-                      href="/profile" 
+                      href="/patient-profile" 
                       className={`block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 ${
-                        activePage === '/profile' ? 'bg-gray-100' : ''
+                        activePage === '/patient-profile' ? 'bg-gray-100' : ''
                       }`}
                     >
                       <div className="flex items-center">
@@ -102,7 +87,7 @@ const Navbar = () => {
                       My Appointments
                     </a>
                     <button 
-                      onClick={handleLogout}
+                      onClick={logout}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     >
                       <div className="flex items-center">
@@ -165,7 +150,7 @@ const Navbar = () => {
               My Appointments
             </a>
             <button 
-              onClick={handleLogout}
+              onClick={logout}
               className="block w-full text-left py-2 px-4 text-sm text-white hover:bg-gray-700 transition duration-300"
             >
               Logout
