@@ -7,6 +7,7 @@ const UserRegistration = () => {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
+    username: '',
     first_name: '',
     last_name: '',
     age: '',
@@ -25,38 +26,39 @@ const UserRegistration = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    
+
+    if (!formData.username.trim()) newErrors.username = 'Username name is required';
     if (!formData.first_name.trim()) newErrors.first_name = 'First name is required';
     if (!formData.last_name.trim()) newErrors.last_name = 'Last name is required';
-    
+
     if (!formData.age) {
       newErrors.age = 'Age is required';
     } else if (isNaN(formData.age) || parseInt(formData.age) <= 0) {
       newErrors.age = 'Age must be a positive number';
     }
-    
+
     if (!formData.gender) newErrors.gender = 'Gender is required';
-    
+
     const mobileRegex = /^\+?1?\d{9,15}$/;
     if (!formData.mobile_no) {
       newErrors.mobile_no = 'Mobile number is required';
     } else if (!mobileRegex.test(formData.mobile_no)) {
       newErrors.mobile_no = 'Mobile number format is invalid';
     }
-    
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!formData.gmail) {
       newErrors.gmail = 'Email is required';
     } else if (!emailRegex.test(formData.gmail)) {
       newErrors.gmail = 'Email format is invalid';
     }
-    
+
     if (!formData.password) {
       newErrors.password = 'Password is required';
     } else if (formData.password.length < 8) {
       newErrors.password = 'Password must be at least 8 characters';
     }
-    
+
     return newErrors;
   };
 
@@ -71,27 +73,27 @@ const UserRegistration = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
+
     const formErrors = validateForm();
     setErrors(formErrors);
-    
+
     if (Object.keys(formErrors).length === 0) {
       try {
         // Send data to your API endpoint
         const response = await fetch('http://localhost:8000/users/user-register', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify(formData),
         });
-        
+
         if (!response.ok) {
           // If the server responds with an error
           const errorData = await response.json();
           throw new Error(errorData.message || 'Registration failed');
         }
-        
+
         const data = await response.json();
         setUserWithPatient(data);
         setUserId(data.user.id);
@@ -99,22 +101,28 @@ const UserRegistration = () => {
         console.log('Registration successful:', data);
         setRegistrationSuccess(true);
 
-
-       if(data.user.user_role.toLowerCase() === "patient"){
+        // nevigate to login page
           setTimeout(() => {
-            console.log("inside setTimeout");
-            navigate(`/patient-profile/${data.user.id}`, { 
-              state: { profileData: data } 
-            });
+            console.log("inside setTimeout for navigate login page")
+            navigate(`/login-page`)
           }, 1500);
-       }else if(data.user.user_role.toLowerCase() === "doctor"){
-            setTimeout(()=> {
-              navigate(`/create-doctor-profile/${data.user.id}`)
-            }, 1500);
-       }
-        
+
+        // if (data.user.user_role.toLowerCase() === "patient") {
+        //   setTimeout(() => {
+        //     console.log("inside setTimeout");
+        //     navigate(`/patient-profile/${data.user.id}`, {
+        //       state: { profileData: data }
+        //     });
+        //   }, 1500);
+        // } else if (data.user.user_role.toLowerCase() === "doctor") {
+        //   setTimeout(() => {
+        //     navigate(`/create-doctor-profile/${data.user.id}`)
+        //   }, 1500);
+        // }
+
         // Reset form after successful submission
         setFormData({
+          username: '',
           first_name: '',
           last_name: '',
           age: '',
@@ -124,16 +132,16 @@ const UserRegistration = () => {
           password: '',
           user_role: 'patient'
         });
-        
+
       } catch (error) {
         console.error('Registration error:', error);
         setErrors({ submit: error.message || 'Registration failed. Please try again.' });
       }
     }
-    
+
     setIsSubmitting(false);
     console.log("end of the userRegistration");
-    
+
   };
 
   return (
@@ -149,7 +157,7 @@ const UserRegistration = () => {
         {/* Left side - Benefits */}
         <div className="w-full md:w-1/3 bg-blue-50 rounded-xl p-6 shadow-md">
           <h3 className="text-2xl font-semibold mb-6 text-blue-800">Why Register With Us?</h3>
-          
+
           <div className="space-y-6">
             <div className="flex items-start">
               <div className="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
@@ -160,7 +168,7 @@ const UserRegistration = () => {
                 <p className="text-gray-600">Book and manage your appointments anytime, anywhere</p>
               </div>
             </div>
-            
+
             <div className="flex items-start">
               <div className="flex-shrink-0 w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
                 <Users className="text-green-600" size={20} />
@@ -170,7 +178,7 @@ const UserRegistration = () => {
                 <p className="text-gray-600">Connect with qualified healthcare professionals</p>
               </div>
             </div>
-            
+
             <div className="flex items-start">
               <div className="flex-shrink-0 w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mr-3">
                 <Lock className="text-purple-600" size={20} />
@@ -189,7 +197,7 @@ const UserRegistration = () => {
             <p className="text-sm text-blue-700 mt-2">— Sarah Johnson, Patient</p>
           </div>
         </div>
-        
+
         {/* Right side - Registration Form */}
         <div className="w-full md:w-2/3">
           <div className="bg-white rounded-xl shadow-lg p-8">
@@ -203,15 +211,40 @@ const UserRegistration = () => {
                 <span>Registration successful! You can now log in to your account.</span>
               </div>
             )}
-            
+
             {errors.submit && (
               <div className="mb-6 p-4 bg-red-100 text-red-700 rounded-lg">
                 {errors.submit}
               </div>
             )}
-            
+
             <form onSubmit={handleSubmit}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Username */}
+                  <div>
+                    <label htmlFor="username" className="block text-gray-700 font-medium mb-2">
+                      Username*
+                    </label>
+                    <div className={`relative ${errors.username ? 'text-red-500' : 'text-gray-500'}`}>
+                      <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+                        <User size={18} />
+                      </span>
+                      <input
+                        type="text"
+                        id="username"
+                        name="username"
+                        value={formData.username}
+                        onChange={handleChange}
+                        className={`w-full pl-10 py-3 border rounded-lg focus:outline-none focus:ring-2 
+                        ${errors.username
+                            ? 'border-red-300 focus:border-red-300 focus:ring-red-200'
+                            : 'border-gray-300 focus:border-blue-300 focus:ring-blue-200'}`}
+                      />
+                    </div>
+                    {errors.username && <p className="text-red-500 text-sm mt-1">{errors.username}</p>}
+                  </div>
+
+
                 {/* First Name */}
                 <div>
                   <label htmlFor="first_name" className="block text-gray-700 font-medium mb-2">
@@ -228,8 +261,8 @@ const UserRegistration = () => {
                       value={formData.first_name}
                       onChange={handleChange}
                       className={`w-full pl-10 py-3 border rounded-lg focus:outline-none focus:ring-2 
-                        ${errors.first_name 
-                          ? 'border-red-300 focus:border-red-300 focus:ring-red-200' 
+                        ${errors.first_name
+                          ? 'border-red-300 focus:border-red-300 focus:ring-red-200'
                           : 'border-gray-300 focus:border-blue-300 focus:ring-blue-200'}`}
                     />
                   </div>
@@ -252,8 +285,8 @@ const UserRegistration = () => {
                       value={formData.last_name}
                       onChange={handleChange}
                       className={`w-full pl-10 py-3 border rounded-lg focus:outline-none focus:ring-2 
-                        ${errors.last_name 
-                          ? 'border-red-300 focus:border-red-300 focus:ring-red-200' 
+                        ${errors.last_name
+                          ? 'border-red-300 focus:border-red-300 focus:ring-red-200'
                           : 'border-gray-300 focus:border-blue-300 focus:ring-blue-200'}`}
                     />
                   </div>
@@ -278,8 +311,8 @@ const UserRegistration = () => {
                       value={formData.age}
                       onChange={handleChange}
                       className={`w-full pl-10 py-3 border rounded-lg focus:outline-none focus:ring-2 
-                        ${errors.age 
-                          ? 'border-red-300 focus:border-red-300 focus:ring-red-200' 
+                        ${errors.age
+                          ? 'border-red-300 focus:border-red-300 focus:ring-red-200'
                           : 'border-gray-300 focus:border-blue-300 focus:ring-blue-200'}`}
                     />
                   </div>
@@ -301,8 +334,8 @@ const UserRegistration = () => {
                       value={formData.gender}
                       onChange={handleChange}
                       className={`w-full pl-10 py-3 border rounded-lg appearance-none bg-white focus:outline-none focus:ring-2 
-                        ${errors.gender 
-                          ? 'border-red-300 focus:border-red-300 focus:ring-red-200' 
+                        ${errors.gender
+                          ? 'border-red-300 focus:border-red-300 focus:ring-red-200'
                           : 'border-gray-300 focus:border-blue-300 focus:ring-blue-200'}`}
                     >
                       <option value="">Select Gender</option>
@@ -312,7 +345,7 @@ const UserRegistration = () => {
                     </select>
                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
                       <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                        <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+                        <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
                       </svg>
                     </div>
                   </div>
@@ -337,8 +370,8 @@ const UserRegistration = () => {
                     onChange={handleChange}
                     placeholder="e.g. +1234567890"
                     className={`w-full pl-10 py-3 border rounded-lg focus:outline-none focus:ring-2 
-                      ${errors.mobile_no 
-                        ? 'border-red-300 focus:border-red-300 focus:ring-red-200' 
+                      ${errors.mobile_no
+                        ? 'border-red-300 focus:border-red-300 focus:ring-red-200'
                         : 'border-gray-300 focus:border-blue-300 focus:ring-blue-200'}`}
                   />
                 </div>
@@ -361,8 +394,8 @@ const UserRegistration = () => {
                     value={formData.gmail}
                     onChange={handleChange}
                     className={`w-full pl-10 py-3 border rounded-lg focus:outline-none focus:ring-2 
-                      ${errors.gmail 
-                        ? 'border-red-300 focus:border-red-300 focus:ring-red-200' 
+                      ${errors.gmail
+                        ? 'border-red-300 focus:border-red-300 focus:ring-red-200'
                         : 'border-gray-300 focus:border-blue-300 focus:ring-blue-200'}`}
                   />
                 </div>
@@ -385,8 +418,8 @@ const UserRegistration = () => {
                     value={formData.password}
                     onChange={handleChange}
                     className={`w-full pl-10 py-3 border rounded-lg focus:outline-none focus:ring-2 
-                      ${errors.password 
-                        ? 'border-red-300 focus:border-red-300 focus:ring-red-200' 
+                      ${errors.password
+                        ? 'border-red-300 focus:border-red-300 focus:ring-red-200'
                         : 'border-gray-300 focus:border-blue-300 focus:ring-blue-200'}`}
                   />
                 </div>
@@ -400,18 +433,18 @@ const UserRegistration = () => {
                   I am registering as:
                 </label>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div 
+                  <div
                     className={`p-4 border rounded-lg cursor-pointer transition-all 
-                      ${formData.user_role === 'patient' 
-                        ? 'border-blue-500 bg-blue-50 text-blue-700' 
+                      ${formData.user_role === 'patient'
+                        ? 'border-blue-500 bg-blue-50 text-blue-700'
                         : 'border-gray-300 hover:border-gray-400'}`}
-                    onClick={() => setFormData({...formData, user_role: 'patient'})}
+                    onClick={() => setFormData({ ...formData, user_role: 'patient' })}
                   >
                     <div className="flex items-center">
-                      <input 
-                        type="radio" 
-                        id="role_patient" 
-                        name="user_role" 
+                      <input
+                        type="radio"
+                        id="role_patient"
+                        name="user_role"
                         value="patient"
                         checked={formData.user_role === 'patient'}
                         onChange={handleChange}
@@ -421,19 +454,19 @@ const UserRegistration = () => {
                     </div>
                     <p className="text-sm text-gray-600 mt-1">Looking for healthcare services</p>
                   </div>
-                  
-                  <div 
+
+                  <div
                     className={`p-4 border rounded-lg cursor-pointer transition-all 
-                      ${formData.user_role === 'doctor' 
-                        ? 'border-blue-500 bg-blue-50 text-blue-700' 
+                      ${formData.user_role === 'doctor'
+                        ? 'border-blue-500 bg-blue-50 text-blue-700'
                         : 'border-gray-300 hover:border-gray-400'}`}
-                    onClick={() => setFormData({...formData, user_role: 'doctor'})}
+                    onClick={() => setFormData({ ...formData, user_role: 'doctor' })}
                   >
                     <div className="flex items-center">
-                      <input 
-                        type="radio" 
-                        id="role_doctor" 
-                        name="user_role" 
+                      <input
+                        type="radio"
+                        id="role_doctor"
+                        name="user_role"
                         value="doctor"
                         checked={formData.user_role === 'doctor'}
                         onChange={handleChange}
@@ -443,8 +476,8 @@ const UserRegistration = () => {
                     </div>
                     <p className="text-sm text-gray-600 mt-1">Providing healthcare services</p>
                   </div>
-                  
-                  
+
+
                 </div>
               </div>
 
@@ -474,7 +507,7 @@ const UserRegistration = () => {
             </form>
 
             <div className="mt-6 text-center text-gray-600">
-              Already have an account? <a href="/login" className="text-blue-600 font-medium hover:underline">Sign in</a>
+              Already have an account? <a href="/login-page" className="text-blue-600 font-medium hover:underline">Sign in</a>
             </div>
           </div>
         </div>

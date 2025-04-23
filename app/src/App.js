@@ -8,6 +8,7 @@ import PatientProfile from './components/PatientProfile.js';
 import CreateDoctorProfile from './components/CreateDoctorProfile.js';
 import "./index.css"
 import DoctorProfile from './components/DoctorProfile.js';
+import LoginPage from './components/LoginPage.js';
 
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
             <Route path="/patient-profile/:userId" element={<PatientProfile />} />
             <Route path='/create-doctor-profile/:userId' element={<CreateDoctorProfile />}/>
             <Route path='/doctor-profile/:doctorId' element={<DoctorProfile />}/>
+            <Route path='/login-page' element={<LoginPage />}/>
 
 
           </Routes>
