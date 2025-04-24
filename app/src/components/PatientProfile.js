@@ -13,7 +13,7 @@ const PatientProfile = () => {
 
     const fetchData = async (accessToken) => {
         try {
-            const response = await fetch("http://localhost:8000/users/user-profile", {
+            const response = await fetch("http://localhost:8000/patient/patient-profile", {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -23,7 +23,7 @@ const PatientProfile = () => {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.message || 'Error while calling User Profile api http://localhost:8000/users/user-profile');
+                throw new Error(errorData.message || 'Error while calling User Profile api http://localhost:8000/patient/patient-profile');
             }
 
             const data = await response.json();
