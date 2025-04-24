@@ -3,15 +3,22 @@ import { Menu, X, ChevronDown, LogOut, User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
-  const { isLoggedIn, logout } = useAuth();
+  const { isLoggedIn, logout, user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
-  const [username, setUsername] = useState('Jugal');
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [activePage, setActivePage] = useState('/');
+  const [isUserLoading, setIsUserLoading] = useState(true);
+
+
 
   useEffect(() => {
     setActivePage(window.location.pathname);
-  }, []);
+
+    if (user) {
+      setIsUserLoading(false);
+    }
+
+  }, [user]);
 
   const toggleNavbar = () => {
     setIsOpen(!isOpen);
@@ -37,56 +44,56 @@ const Navbar = () => {
 
           {/* Primary nav - Desktop */}
           <div className="hidden md:flex items-center space-x-3">
-            <a 
-              href="/" 
-              className={`py-4 px-3 transition duration-300 rounded ${
-                activePage === '/' ? 'bg-gray-700 text-white' : 'hover:bg-gray-700'
-              }`}
+            <a
+              href="/"
+              className={`py-4 px-3 transition duration-300 rounded ${activePage === '/' ? 'bg-gray-700 text-white' : 'hover:bg-gray-700'
+                }`}
             >
               Home
             </a>
-            
+
             {!isLoggedIn ? (
-              <a 
-                href="/register" 
-                className={`py-4 px-3 transition duration-300 rounded ${
-                  activePage === '/register' ? 'bg-gray-700 text-white' : 'hover:bg-gray-700'
-                }`}
+              <a
+                href="/login-page"
+                className={`py-4 px-3 transition duration-300 rounded ${activePage === '/login-page' ? 'bg-gray-700 text-white' : 'hover:bg-gray-700'
+                  }`}
               >
-                SignUp/SignIn
+                SignIn
               </a>
             ) : (
               <div className="relative">
-                <button 
+                <button
                   onClick={toggleDropdown}
                   className="flex items-center py-4 px-3 hover:bg-gray-700 transition duration-300 rounded"
                 >
-                  <span className="mr-1">{username}</span>
+                  {isUserLoading ? (
+                    <div className="h-4 w-16 bg-gray-600 animate-pulse rounded"></div>
+                  ) : (
+                    <span className="mr-1">{user?.username}</span>
+                  )}
                   <ChevronDown size={16} />
                 </button>
-                
+
                 {dropdownOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10">
-                    <a 
-                      href="/patient-profile" 
-                      className={`block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 ${
-                        activePage === '/patient-profile' ? 'bg-gray-100' : ''
-                      }`}
+                    <a
+                      href="/patient-profile"
+                      className={`block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 ${activePage === '/patient-profile' ? 'bg-gray-100' : ''
+                        }`}
                     >
                       <div className="flex items-center">
                         <User size={16} className="mr-2" />
                         Profile
                       </div>
                     </a>
-                    <a 
-                      href="/appointments" 
-                      className={`block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 ${
-                        activePage === '/appointments' ? 'bg-gray-100' : ''
-                      }`}
+                    <a
+                      href="/appointments"
+                      className={`block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 ${activePage === '/appointments' ? 'bg-gray-100' : ''
+                        }`}
                     >
                       My Appointments
                     </a>
-                    <button 
+                    <button
                       onClick={logout}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     >
@@ -99,7 +106,7 @@ const Navbar = () => {
                 )}
               </div>
             )}
-            
+
           </div>
 
           {/* Mobile menu button */}
@@ -113,43 +120,44 @@ const Navbar = () => {
 
       {/* Mobile menu */}
       <div className={`md:hidden ${isOpen ? "block" : "hidden"}`}>
-        <a 
-          href="/" 
-          className={`block py-2 px-4 text-sm hover:bg-gray-700 transition duration-300 ${
-            activePage === '/' ? 'bg-gray-700' : ''
-          }`}
+        <a
+          href="/"
+          className={`block py-2 px-4 text-sm hover:bg-gray-700 transition duration-300 ${activePage === '/' ? 'bg-gray-700' : ''
+            }`}
         >
           Home
         </a>
-        
+
         {!isLoggedIn ? (
-          <a 
-            href="/register" 
-            className={`block py-2 px-4 text-sm hover:bg-gray-700 transition duration-300 ${
-              activePage === '/register' ? 'bg-gray-700' : ''
-            }`}
+          <a
+            href="/login-page"
+            className={`block py-2 px-4 text-sm hover:bg-gray-700 transition duration-300 ${activePage === '/login-page' ? 'bg-gray-700' : ''
+              }`}
           >
-            SignUp/SignIn
+            SignIn
           </a>
         ) : (
           <>
-            <a 
-              href="/profile" 
-              className={`block py-2 px-4 text-sm hover:bg-gray-700 transition duration-300 ${
-                activePage === '/profile' ? 'bg-gray-700' : ''
-              }`}
+            <a
+              href="/profile"
+              className={`block py-2 px-4 text-sm hover:bg-gray-700 transition duration-300 ${activePage === '/profile' ? 'bg-gray-700' : ''
+                }`}
             >
-              Profile
+              {isUserLoading ? (
+                <div className="h-4 w-16 bg-gray-600 animate-pulse rounded inline-block mr-2"></div>
+              ) : (
+                user?.username
+              )}
+               {' - Profile'}
             </a>
-            <a 
-              href="/appointments" 
-              className={`block py-2 px-4 text-sm hover:bg-gray-700 transition duration-300 ${
-                activePage === '/appointments' ? 'bg-gray-700' : ''
-              }`}
+            <a
+              href="/appointments"
+              className={`block py-2 px-4 text-sm hover:bg-gray-700 transition duration-300 ${activePage === '/appointments' ? 'bg-gray-700' : ''
+                }`}
             >
               My Appointments
             </a>
-            <button 
+            <button
               onClick={logout}
               className="block w-full text-left py-2 px-4 text-sm text-white hover:bg-gray-700 transition duration-300"
             >
@@ -157,7 +165,7 @@ const Navbar = () => {
             </button>
           </>
         )}
-      
+
       </div>
     </nav>
   );
