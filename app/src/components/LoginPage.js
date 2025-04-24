@@ -87,7 +87,10 @@ const LoginPage = () => {
                 console.log(data.access_token);
 
                 const token = data.access_token;
-                login(token);
+                const expiryTime = new Date(data.expiry_time);
+
+                
+                login(token,expiryTime);
                 setLoginSuccess(true);
 
                 setTimeout(() => {

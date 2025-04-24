@@ -142,7 +142,7 @@ useEffect(() => {
             <Link
               to="/profile"
               className={`block py-2 px-4 text-sm hover:bg-gray-700 transition duration-300 ${location.pathname === '/profile' ? 'bg-gray-700' : ''
-                }`}z
+                }`}
             >
               {isUserLoading ? (
                 <div className="h-4 w-16 bg-gray-600 animate-pulse rounded inline-block mr-2"></div>
