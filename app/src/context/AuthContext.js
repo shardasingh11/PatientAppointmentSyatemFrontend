@@ -33,14 +33,16 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const storedToken = localStorage.getItem('access_token');
-    fetchData(storedToken)
-    .then(userData => {
-      setUser(userData);
-    })
-    .catch(error => {
-      console.error(error);
-    });
-  },[token])
+    if (storedToken) {
+      fetchData(storedToken)
+        .then(userData => {
+          setUser(userData);
+        })
+        .catch(error => {
+          console.error(error);
+        });
+    }
+  }, [token])
 
   useEffect(() => {
     // Check if user is logged in when the app loads
@@ -66,7 +68,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, token, login, logout, user}}>
+    <AuthContext.Provider value={{ isLoggedIn, token, login, logout, user }}>
       {children}
     </AuthContext.Provider>
   );
