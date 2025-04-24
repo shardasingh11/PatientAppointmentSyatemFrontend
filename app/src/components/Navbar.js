@@ -1,24 +1,25 @@
 import { useState, useEffect } from 'react';
 import { Menu, X, ChevronDown, LogOut, User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { Link, useLocation } from 'react-router-dom';
 
 const Navbar = () => {
   const { isLoggedIn, logout, user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [activePage, setActivePage] = useState('/');
   const [isUserLoading, setIsUserLoading] = useState(true);
 
+  const location = useLocation();
 
 
-  useEffect(() => {
-    setActivePage(window.location.pathname);
 
-    if (user) {
-      setIsUserLoading(false);
-    }
 
-  }, [user]);
+
+useEffect(() => {
+  if (user) {
+    setIsUserLoading(false);
+  }
+}, [user]);
 
   const toggleNavbar = () => {
     setIsOpen(!isOpen);
@@ -44,22 +45,22 @@ const Navbar = () => {
 
           {/* Primary nav - Desktop */}
           <div className="hidden md:flex items-center space-x-3">
-            <a
-              href="/"
-              className={`py-4 px-3 transition duration-300 rounded ${activePage === '/' ? 'bg-gray-700 text-white' : 'hover:bg-gray-700'
+            <Link
+              to="/"
+              className={`py-4 px-3 transition duration-300 rounded ${location.pathname === '/' ? 'bg-gray-700 text-white' : 'hover:bg-gray-700'
                 }`}
             >
               Home
-            </a>
+            </Link>
 
             {!isLoggedIn ? (
-              <a
-                href="/login-page"
-                className={`py-4 px-3 transition duration-300 rounded ${activePage === '/login-page' ? 'bg-gray-700 text-white' : 'hover:bg-gray-700'
+              <Link
+                to="/login-page"
+                className={`py-4 px-3 transition duration-300 rounded ${location.pathname === '/login-page' ? 'bg-gray-700 text-white' : 'hover:bg-gray-700'
                   }`}
               >
                 SignIn
-              </a>
+              </Link>
             ) : (
               <div className="relative">
                 <button
@@ -76,23 +77,23 @@ const Navbar = () => {
 
                 {dropdownOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10">
-                    <a
-                      href="/patient-profile"
-                      className={`block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 ${activePage === '/patient-profile' ? 'bg-gray-100' : ''
+                    <Link
+                      to="/patient-profile"
+                      className={`block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 ${location.pathname === '/patient-profile' ? 'bg-gray-100' : ''
                         }`}
                     >
                       <div className="flex items-center">
                         <User size={16} className="mr-2" />
                         Profile
                       </div>
-                    </a>
-                    <a
-                      href="/appointments"
-                      className={`block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 ${activePage === '/appointments' ? 'bg-gray-100' : ''
+                    </Link>
+                    <Link
+                      to="/appointments"
+                      className={`block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 ${location.pathname === '/appointments' ? 'bg-gray-100' : ''
                         }`}
                     >
                       My Appointments
-                    </a>
+                    </Link>
                     <button
                       onClick={logout}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -120,28 +121,28 @@ const Navbar = () => {
 
       {/* Mobile menu */}
       <div className={`md:hidden ${isOpen ? "block" : "hidden"}`}>
-        <a
-          href="/"
-          className={`block py-2 px-4 text-sm hover:bg-gray-700 transition duration-300 ${activePage === '/' ? 'bg-gray-700' : ''
+        <Link
+          to="/"
+          className={`block py-2 px-4 text-sm hover:bg-gray-700 transition duration-300 ${location.pathname === '/' ? 'bg-gray-700' : ''
             }`}
         >
           Home
-        </a>
+        </Link>
 
         {!isLoggedIn ? (
-          <a
-            href="/login-page"
-            className={`block py-2 px-4 text-sm hover:bg-gray-700 transition duration-300 ${activePage === '/login-page' ? 'bg-gray-700' : ''
+          <Link
+            to="/login-page"
+            className={`block py-2 px-4 text-sm hover:bg-gray-700 transition duration-300 ${location.pathname === '/login-page' ? 'bg-gray-700' : ''
               }`}
           >
             SignIn
-          </a>
+          </Link>
         ) : (
           <>
-            <a
-              href="/profile"
-              className={`block py-2 px-4 text-sm hover:bg-gray-700 transition duration-300 ${activePage === '/profile' ? 'bg-gray-700' : ''
-                }`}
+            <Link
+              to="/profile"
+              className={`block py-2 px-4 text-sm hover:bg-gray-700 transition duration-300 ${location.pathname === '/profile' ? 'bg-gray-700' : ''
+                }`}z
             >
               {isUserLoading ? (
                 <div className="h-4 w-16 bg-gray-600 animate-pulse rounded inline-block mr-2"></div>
@@ -149,14 +150,14 @@ const Navbar = () => {
                 user?.username
               )}
                {' - Profile'}
-            </a>
-            <a
-              href="/appointments"
-              className={`block py-2 px-4 text-sm hover:bg-gray-700 transition duration-300 ${activePage === '/appointments' ? 'bg-gray-700' : ''
+            </Link>
+            <Link
+            to="/appointments"
+              className={`block py-2 px-4 text-sm hover:bg-gray-700 transition duration-300 ${location.pathname === '/appointments' ? 'bg-gray-700' : ''
                 }`}
             >
               My Appointments
-            </a>
+            </Link>
             <button
               onClick={logout}
               className="block w-full text-left py-2 px-4 text-sm text-white hover:bg-gray-700 transition duration-300"

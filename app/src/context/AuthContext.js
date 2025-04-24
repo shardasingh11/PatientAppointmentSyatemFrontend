@@ -31,7 +31,16 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-
+  useEffect(() => {
+    const storedToken = localStorage.getItem('access_token');
+    fetchData(storedToken)
+    .then(userData => {
+      setUser(userData);
+    })
+    .catch(error => {
+      console.error(error);
+    });
+  },[token])
 
   useEffect(() => {
     // Check if user is logged in when the app loads
@@ -39,19 +48,8 @@ export const AuthProvider = ({ children }) => {
     if (storedToken) {
       setToken(storedToken);
       setIsLoggedIn(true);
-
-      fetchData(storedToken)
-        .then(userData => {
-          setUser(userData);
-        })
-        .catch(error => {
-          console.error(error);
-        });
-
     }
-
-
-  }, [token]);
+  }, []);
 
   // Login function
   const login = (token) => {
