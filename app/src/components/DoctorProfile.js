@@ -13,23 +13,78 @@ import {
     CheckCircle
 } from 'lucide-react';
 import { useParams } from 'react-router-dom';
+import { useAuth} from '../context/AuthContext';
+
 
 const DoctorProfile = () => {
-    const { doctorId } = useParams()
+
+    const { token, isLoggedIn } = useAuth();
     const [doctor, setDoctor] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [verifying, setVerifying] = useState(false);
+    const [doctorId, setDoctorId] = useState(null)
+    
 
     useEffect(() => {
-        fetchDoctorProfile();
+        fetchDoctorId()
+            .then((docId) => {
+                setDoctorId(docId);
+            })
+    }, []);
+
+    useEffect(() => {
+        if(doctorId){
+            fetchDoctorProfile();
+        }
+        
     }, [doctorId]);
+
+    useEffect(() => {
+        if(!isLoggedIn){
+            setLoading(true);
+        }
+    }, [isLoggedIn])
+
+    const fetchDoctorId = async () => {
+        try{
+            const response = await fetch("http://localhost:8000/doctor/get-doctorId",{
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+
+                }
+            })
+
+            if(!response.ok){
+                throw new Error('Failed to fetch doctor Id');
+
+            }
+
+            const data = await response.json();
+            return data.doctor_id;            
+
+
+        }catch (err) {
+            setError('Error loading doctor Id. Please try again later.');
+            console.error('Error fetching doctor Id:', err);
+        } 
+    }
 
     const fetchDoctorProfile = async () => {
         try {
             setLoading(true);
             // Replace with your actual API endpoint
-            const response = await fetch(`http://localhost:8000/doctor/doctor-profile/${doctorId}`);
+           
+            const response = await fetch(`http://localhost:8000/doctor/doctor-profile/${doctorId}`,{
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+
+                }
+            });
 
             if (!response.ok) {
                 throw new Error('Failed to fetch doctor profile');

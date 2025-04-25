@@ -15,11 +15,11 @@ const Navbar = () => {
 
 
 
-useEffect(() => {
-  if (user) {
-    setIsUserLoading(false);
-  }
-}, [user]);
+  useEffect(() => {
+    if (user) {
+      setIsUserLoading(false);
+    }
+  }, [user]);
 
   const toggleNavbar = () => {
     setIsOpen(!isOpen);
@@ -28,7 +28,6 @@ useEffect(() => {
   const toggleDropdown = () => {
     setDropdownOpen(!dropdownOpen);
   };
-
 
 
 
@@ -77,16 +76,62 @@ useEffect(() => {
 
                 {dropdownOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10">
-                    <Link
-                      to="/patient-profile"
-                      className={`block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 ${location.pathname === '/patient-profile' ? 'bg-gray-100' : ''
-                        }`}
-                    >
-                      <div className="flex items-center">
-                        <User size={16} className="mr-2" />
-                        Profile
-                      </div>
-                    </Link>
+                    {user?.user_role === "patient" && (
+                      user?.is_profile_created ? (
+                        <Link
+                          to="/patient-profile"
+                          className={`block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 ${location.pathname === '/patient-profile' ? 'bg-gray-100' : ''
+                            }`}
+                        >
+                          <div className="flex items-center">
+                            <User size={16} className="mr-2" />
+                            Profile
+                          </div>
+                        </Link>
+                      ) : (
+                        <Link
+                          to="/create-profile"
+                          className={`block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 ${location.pathname === "/create-profile" ? "bg-gray-100" : ""
+                            }`}
+                        >
+                          <div className="flex items-center">
+                            <User size={16} className="mr-2" />
+                            Profile
+                          </div>
+                        </Link>
+                      )
+
+                    )
+                    }
+
+                    {user?.user_role === "doctor" &&(
+                      user?.is_profile_created ? (
+                        <Link
+                          to="/doctor-profile"
+                          className={`block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 ${location.pathname === '/doctor-profile' ? 'bg-gray-100' : ''
+                            }`}
+                        >
+                          <div className="flex items-center">
+                            <User size={16} className="mr-2" />
+                            Profile
+                          </div>
+                        </Link>
+
+                      ):(
+                        <Link
+                          to="/create-doctor-profile"
+                          className={`block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 ${location.pathname === '/create-doctor-profile' ? 'bg-gray-100' : ''
+                            }`}
+                        >
+                          <div className="flex items-center">
+                            <User size={16} className="mr-2" />
+                            Profile
+                          </div>
+                        </Link>
+                      )
+                    )
+                    }
+
                     <Link
                       to="/appointments"
                       className={`block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 ${location.pathname === '/appointments' ? 'bg-gray-100' : ''
@@ -149,10 +194,10 @@ useEffect(() => {
               ) : (
                 user?.username
               )}
-               {' - Profile'}
+              {' - Profile'}
             </Link>
             <Link
-            to="/appointments"
+              to="/appointments"
               className={`block py-2 px-4 text-sm hover:bg-gray-700 transition duration-300 ${location.pathname === '/appointments' ? 'bg-gray-700' : ''
                 }`}
             >

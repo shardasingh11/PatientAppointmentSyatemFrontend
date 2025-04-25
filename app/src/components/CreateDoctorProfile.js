@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Save, Award, MapPin, Building, User } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+
 
 const CreateDoctorProfile = () => {
     const navigate = useNavigate();
@@ -9,6 +11,7 @@ const CreateDoctorProfile = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(false);
+    const { token } = useAuth();
 
     // Form data state reflecting the DoctorCreate schema structure
     const [formData, setFormData] = useState({
@@ -45,6 +48,15 @@ const CreateDoctorProfile = () => {
             }
         }
     });
+
+
+    if(!token){
+        return (
+            <div className="flex justify-center items-center h-96">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+            </div>
+        );
+    }
 
     // Handle input changes for nested objects
     const handleInputChange = (section, field, value) => {
@@ -99,10 +111,12 @@ const CreateDoctorProfile = () => {
                 }
             };
 
-            const response = await fetch(`http://localhost:8000/doctor/doctor-profile/${userId}`, {
+            const response = await fetch("http://localhost:8000/doctor/doctor-profile", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+
                 },
                 body: JSON.stringify(dataToSubmit),
             });
