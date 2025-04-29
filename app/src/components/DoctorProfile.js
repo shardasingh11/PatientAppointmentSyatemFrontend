@@ -13,7 +13,7 @@ import {
     CheckCircle
 } from 'lucide-react';
 import { useParams } from 'react-router-dom';
-import { useAuth} from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 
 
 const DoctorProfile = () => {
@@ -24,7 +24,8 @@ const DoctorProfile = () => {
     const [error, setError] = useState(null);
     const [verifying, setVerifying] = useState(false);
     const [doctorId, setDoctorId] = useState(null)
-    
+    const [verificationSuccess, setVerificationSuccess] = useState(false);
+
 
     useEffect(() => {
         fetchDoctorId()
@@ -34,21 +35,22 @@ const DoctorProfile = () => {
     }, []);
 
     useEffect(() => {
-        if(doctorId){
+        if (doctorId) {
             fetchDoctorProfile();
         }
-        
+
     }, [doctorId]);
 
     useEffect(() => {
-        if(!isLoggedIn){
+        if (!isLoggedIn) {
             setLoading(true);
         }
     }, [isLoggedIn])
 
+
     const fetchDoctorId = async () => {
-        try{
-            const response = await fetch("http://localhost:8000/doctor/get-doctorId",{
+        try {
+            const response = await fetch("http://localhost:8000/doctor/get-doctorId", {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -57,27 +59,27 @@ const DoctorProfile = () => {
                 }
             })
 
-            if(!response.ok){
+            if (!response.ok) {
                 throw new Error('Failed to fetch doctor Id');
 
             }
 
             const data = await response.json();
-            return data.doctor_id;            
+            return data.doctor_id;
 
 
-        }catch (err) {
+        } catch (err) {
             setError('Error loading doctor Id. Please try again later.');
             console.error('Error fetching doctor Id:', err);
-        } 
+        }
     }
 
     const fetchDoctorProfile = async () => {
         try {
             setLoading(true);
             // Replace with your actual API endpoint
-           
-            const response = await fetch(`http://localhost:8000/doctor/doctor-profile/${doctorId}`,{
+
+            const response = await fetch(`http://localhost:8000/doctor/doctor-profile/${doctorId}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -91,7 +93,7 @@ const DoctorProfile = () => {
             }
 
             const data = await response.json();
-            console.log("logging response data",data);
+            console.log("logging response data", data);
             console.log("logging user", data.user);
             console.log("logging user name", data.user.name);
             setDoctor(data);
@@ -108,28 +110,30 @@ const DoctorProfile = () => {
         try {
             setVerifying(true);
             // Replace with your actual verification API endpoint
-            const response = await fetch(`/api/doctors/${doctorId}/verify`, {
+            const response = await fetch(`http://localhost:8000/doctor/${doctorId}/doctor-verification`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+
                 },
+                body: JSON.stringify({ doctorId })
             });
 
             if (!response.ok) {
                 throw new Error('Failed to verify doctor');
             }
 
-            // Update the local state to reflect verification
-            setDoctor(prevDoctor => ({
-                ...prevDoctor,
-                is_verified: true
-            }));
+            const veri_data = await response.json();
+            setVerificationSuccess(true);
+
+            setTimeout(() =>{
+                setVerificationSuccess(false);
+            },5000);
 
         } catch (err) {
             setError('Error verifying doctor. Please try again later.');
             console.error('Error verifying doctor:', err);
-        } finally {
-            setVerifying(false);
         }
     };
 
@@ -193,8 +197,8 @@ const DoctorProfile = () => {
                             >
                                 {verifying ? (
                                     <>
-                                        <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                                        Verifying...
+                                        <div className="h-4"></div>
+                                        Pending
                                     </>
                                 ) : (
                                     <>
@@ -209,6 +213,14 @@ const DoctorProfile = () => {
                             <div className="flex items-center text-green-600">
                                 <CheckCircle className="mr-2" size={20} />
                                 <span className="font-semibold">Verified Doctor</span>
+                            </div>
+                        )}
+
+                         {/* Add the success message here */}
+                        {verificationSuccess && (
+                            <div className="mt-4 w-full bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+                                <strong className="font-bold">Success! </strong>
+                                <span className="block sm:inline">Verification request submitted successfully.</span>
                             </div>
                         )}
                     </div>
