@@ -25,14 +25,18 @@ const DoctorProfile = () => {
     const [verifying, setVerifying] = useState(false);
     const [doctorId, setDoctorId] = useState(null)
     const [verificationSuccess, setVerificationSuccess] = useState(false);
+    const [verificationReqSuccess, setVerificationReqSuccess] = useState(false);
+    const [doctorVerificationData, setDoctorVerificationData] = useState(null);
 
 
     useEffect(() => {
-        fetchDoctorId()
-            .then((docId) => {
-                setDoctorId(docId);
-            })
-    }, []);
+        if (token) {
+            fetchDoctorId()
+                .then((docId) => {
+                    setDoctorId(docId);
+                })
+        }
+    }, [token]);
 
     useEffect(() => {
         if (doctorId) {
@@ -46,6 +50,18 @@ const DoctorProfile = () => {
             setLoading(true);
         }
     }, [isLoggedIn])
+
+    useEffect(() => {
+        if(verificationReqSuccess){
+            fetchVerifyDoctor()
+                .then((response) =>{
+                    setDoctorVerificationData(response);
+                    console.log("logging doctor verfication data", response);
+
+                })
+        }
+    }, [verificationReqSuccess])
+
 
 
     const fetchDoctorId = async () => {
@@ -106,6 +122,31 @@ const DoctorProfile = () => {
         }
     };
 
+
+    const fetchVerifyDoctor = async () => {
+        try {
+            const response = await fetch(`http://localhost:8000/doctor/doctor-verification/${doctorId}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to get verifiy doctor")
+            }
+
+            const data = await response.json()
+            return(data)
+
+
+        } catch (err) {
+            setError('Error get verified doctor. Please try again later.');
+            console.error('Error get verified doctor:', err);
+        }
+    }
+
     const handleVerifyDoctor = async () => {
         try {
             setVerifying(true);
@@ -124,12 +165,18 @@ const DoctorProfile = () => {
                 throw new Error('Failed to verify doctor');
             }
 
-            const veri_data = await response.json();
-            setVerificationSuccess(true);
+            const verification_data = await response.json();
+            console.log("logging verification data ", verification_data);
 
-            setTimeout(() =>{
+
+            if (verification_data) {
+                setVerificationReqSuccess(true);
+                setVerificationSuccess(true);
+
+            }
+            setTimeout(() => {
                 setVerificationSuccess(false);
-            },5000);
+            }, 5000);
 
         } catch (err) {
             setError('Error verifying doctor. Please try again later.');
@@ -197,8 +244,15 @@ const DoctorProfile = () => {
                             >
                                 {verifying ? (
                                     <>
-                                        <div className="h-4"></div>
-                                        Pending
+                                        <div className="h-4 flex items-center ">
+                                        {!doctorVerificationData?.status ? (
+                                                // Loader (e.g., spinner or text)
+                                                <div className="loader border-2 border-t-transparent border-blue-500 rounded-full w-4 h-4 animate-spin"></div>
+                                            ) : (
+                                                <span>{doctorVerificationData.status}</span>
+                                            )}
+                                        </div>
+                                        
                                     </>
                                 ) : (
                                     <>
@@ -216,7 +270,7 @@ const DoctorProfile = () => {
                             </div>
                         )}
 
-                         {/* Add the success message here */}
+                        {/* Add the success message here */}
                         {verificationSuccess && (
                             <div className="mt-4 w-full bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
                                 <strong className="font-bold">Success! </strong>
