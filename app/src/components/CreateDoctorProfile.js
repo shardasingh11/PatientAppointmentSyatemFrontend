@@ -10,7 +10,7 @@ const CreateDoctorProfile = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(false);
-    const { token } = useAuth();
+    const { token, refreshUserData } = useAuth();
 
     // Form data state reflecting the DoctorCreate schema structure
     const [formData, setFormData] = useState({
@@ -127,7 +127,8 @@ const CreateDoctorProfile = () => {
                 throw new Error(errorData.detail || 'Failed to create doctor profile');
             }
 
-            const data = await response.json()
+            const data = await response.json();
+            refreshUserData();
 
             setSuccess(true);
             // Redirect to doctor profile page after successful submission
