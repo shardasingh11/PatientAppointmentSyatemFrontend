@@ -36,7 +36,7 @@ const AdminDashboard = () => {
           console.log("logging doctor and verification data", response);
         })
     }
-  },[]);
+  },[token]);
 
   // calling the get_doctor_verification api
   const fetchDoctorProfileWithVerification = async () => {

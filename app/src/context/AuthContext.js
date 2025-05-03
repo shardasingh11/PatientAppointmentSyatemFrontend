@@ -62,9 +62,11 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
 
-    const storedToken = localStorage.getItem('access_token');
-    if (storedToken) {
-      fetchData(storedToken)
+    // const storedToken = localStorage.getItem('access_token');
+    console.log("logging from the useEffect of AuthContext"); 
+    if (token) {
+      console.log("inside if");
+      fetchData(token)
         .then(userData => {
           setUser(userData);
         })
@@ -76,10 +78,13 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     // Check if user is logged in when the app loads
-    const storedToken = localStorage.getItem('access_token');
-    if (storedToken) {
-      setToken(storedToken);
-      setIsLoggedIn(true);
+    console.log("logging useEffect below user api");
+    if (!token) {
+      const storedToken = localStorage.getItem('access_token');
+      if (storedToken) {
+        setToken(storedToken);
+        setIsLoggedIn(true);
+      }
     }
   }, []);
 
