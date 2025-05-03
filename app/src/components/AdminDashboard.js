@@ -7,7 +7,8 @@ import {
   Filter,
   Eye,
   X,
-  AlertCircle
+  AlertCircle,
+  ChevronDown
 } from 'lucide-react';
 import AdminDoctorProfile from './AdminDoctorProfile';
 import { useAuth } from '../context/AuthContext';
@@ -15,28 +16,41 @@ import { useAuth } from '../context/AuthContext';
 
 const AdminDashboard = () => {
 
-  console.log("AdminDashboard rendering");
-
-
   const { token } = useAuth();
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [doctors, setDoctors] = useState([]);
+  const [filteredDoctors, setFilteredDoctors] = useState([]);
 
-  console.log(token, "logging token");
+
+
+  
+  // Filter states
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [specialtyFilter, setSpecialtyFilter] = useState('all');
+  const [showFilters, setShowFilters] = useState(false);
+  const [specialties, setSpecialties] = useState([]);
+
 
   useEffect(() => {
 
-    if(token){
+    if (token) {
       fetchDoctorProfileWithVerification()
         .then((response) => {
           setDoctors(response);
+          setFilteredDoctors(response);
+
+
+          // Extract unique specialties for filter dropdown
+          const uniqueSpecialties = [...new Set(response.map(doctor => doctor.speciality))];
+          setSpecialties(uniqueSpecialties);
           console.log("logging doctor and verification data", response);
         })
     }
-  },[token]);
+  }, [token]);
 
   // calling the get_doctor_verification api
   const fetchDoctorProfileWithVerification = async () => {
@@ -68,6 +82,41 @@ const AdminDashboard = () => {
   }
 
 
+  // Apply filters when any filter criteria changes
+  useEffect(() => {
+    applyFilters();
+  }, [searchTerm, statusFilter, specialtyFilter, doctors]);
+
+  // Apply all filters
+  const applyFilters = () => {
+    let filtered = [...doctors];
+
+    // Apply search term filter
+    if (searchTerm) {
+      filtered = filtered.filter(doctor => 
+        doctor.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        doctor.user?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        doctor.speciality?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Apply status filter
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(doctor => 
+        doctor.DoctorVerification?.some(verification => verification.status === statusFilter)
+      );
+    }
+
+    // Apply specialty filter
+    if (specialtyFilter !== 'all') {
+      filtered = filtered.filter(doctor => doctor.speciality === specialtyFilter);
+    }
+
+    setFilteredDoctors(filtered);
+  };
+
+
+
 
 
 
@@ -83,33 +132,7 @@ const AdminDashboard = () => {
       minute: '2-digit'
     });
   };
-
-  // Handle verification status change
-  const handleVerificationChange = (doctorId, verificationId, newStatus) => {
-    setDoctors(doctors.map(doctor => {
-      if (doctor.id === doctorId) {
-        const updatedVerification = doctor.DoctorVerification?.map(verification => {
-          if (verification.id === verificationId) {
-            return {
-              ...verification,
-              status: newStatus,
-              processed_at: new Date().toISOString(),
-            };
-          }
-          return verification;
-        });
-  
-        return {
-          ...doctor,
-          DoctorVerification: updatedVerification,
-        };
-      }
-      return doctor;
-    }));
-  
-    setShowProfileModal(false);
-  };
-  
+ 
 
   // View doctor profile
   const viewDoctorProfile = (doctor) => {
@@ -122,6 +145,14 @@ const AdminDashboard = () => {
     setShowProfileModal(false);
   };
 
+
+  
+  // Reset all filters
+  const resetFilters = () => {
+    setSearchTerm('');
+    setStatusFilter('all');
+    setSpecialtyFilter('all');
+  };
 
   // Get status badge style based on verification status
   const getStatusBadge = (status) => {
@@ -189,6 +220,87 @@ const AdminDashboard = () => {
       </div>
 
 
+      
+      {/* Filters Section */}
+      <div className="mb-6">
+        <div className="flex flex-col md:flex-row justify-between gap-4 mb-4">
+          {/* Search Bar */}
+          <div className="relative w-full md:w-1/3">
+            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+              <Search className="h-5 w-5 text-gray-400" />
+            </div>
+            <input
+              type="text"
+              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              placeholder="Search by name, email, specialty..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+
+          {/* Filter Toggle Button */}
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            <Filter className="h-5 w-5 mr-2" />
+            Filters
+            <ChevronDown className={`h-4 w-4 ml-1 transform ${showFilters ? 'rotate-180' : ''}`} />
+          </button>
+        </div>
+
+        {/* Expanded Filters */}
+        {showFilters && (
+          <div className="bg-white p-4 rounded-lg shadow mb-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Status Filter */}
+            <div>
+              <label htmlFor="status-filter" className="block text-sm font-medium text-gray-700 mb-1">
+                Verification Status
+              </label>
+              <select
+                id="status-filter"
+                className="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+              >
+                <option value="all">All Statuses</option>
+                <option value="pending">Pending</option>
+                <option value="verified">Verified</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </div>
+
+            {/* Specialty Filter */}
+            <div>
+              <label htmlFor="specialty-filter" className="block text-sm font-medium text-gray-700 mb-1">
+                Specialty
+              </label>
+              <select
+                id="specialty-filter"
+                className="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                value={specialtyFilter}
+                onChange={(e) => setSpecialtyFilter(e.target.value)}
+              >
+                <option value="all">All Specialties</option>
+                {specialties.map((specialty, index) => (
+                  <option key={index} value={specialty}>{specialty}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Reset Filters Button */}
+            <div className="flex items-end">
+              <button
+                onClick={resetFilters}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                Reset Filters
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Doctors Table */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <div className="overflow-x-auto">
@@ -213,9 +325,9 @@ const AdminDashboard = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {doctors.length > 0 ? (
-                doctors.map((doctor) => (
-                  
+              {filteredDoctors.length > 0 ? (
+                filteredDoctors.map((doctor) => (
+
 
                   <tr key={doctor.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -233,7 +345,7 @@ const AdminDashboard = () => {
                       <div className="text-sm text-gray-900">{doctor.speciality}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                    
+
                       <div className="text-sm text-gray-900">{formatDate(doctor.DoctorVerification?.[0]?.requested_at)}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -267,7 +379,6 @@ const AdminDashboard = () => {
         doctor={selectedDoctor}
         showModal={showProfileModal}
         onClose={closeProfileModal}
-        onStatusChange={handleVerificationChange}
       />
 
       {/* Summary Stats */}

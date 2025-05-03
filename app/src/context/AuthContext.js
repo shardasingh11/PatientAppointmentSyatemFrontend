@@ -86,7 +86,7 @@ export const AuthProvider = ({ children }) => {
         setIsLoggedIn(true);
       }
     }
-  }, []);
+  },[]);
 
   // Function to refresh user data
   const refreshUserData = () => {
