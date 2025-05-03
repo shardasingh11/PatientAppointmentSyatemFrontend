@@ -1,83 +1,76 @@
-import React, { useState } from 'react';
-import { 
-  CheckCircle, 
-  Clock, 
-  User, 
-  Search, 
-  Filter, 
-  Eye, 
+import React, { useEffect, useState } from 'react';
+import {
+  CheckCircle,
+  Clock,
+  User,
+  Search,
+  Filter,
+  Eye,
   X,
   AlertCircle
 } from 'lucide-react';
 import AdminDoctorProfile from './AdminDoctorProfile';
+import { useAuth } from '../context/AuthContext';
+
 
 const AdminDashboard = () => {
-  // Mock data for doctors awaiting verification
-  const [doctors, setDoctors] = useState([
-    {
-      id: 1,
-      name: "Dr. Sarah Johnson",
-      specialty: "Cardiologist",
-      requestTime: "2025-04-23T14:30:00",
-      status: "pending",
-      email: "sarah.johnson@example.com",
-      phone: "+1 (555) 123-4567",
-      licenseNumber: "MED12345678",
-      experience: "15 years",
-      qualification: "MD, Cardiology, Harvard Medical School"
-    },
-    {
-      id: 2,
-      name: "Dr. Michael Chen",
-      specialty: "Pediatrician",
-      requestTime: "2025-04-24T09:15:00",
-      status: "pending",
-      email: "michael.chen@example.com",
-      phone: "+1 (555) 987-6543",
-      licenseNumber: "MED87654321",
-      experience: "15 years",
-      qualification: "MD, Cardiology, Harvard Medical School"
-    },
-    {
-      id: 3,
-      name: "Dr. Emily Rodriguez",
-      specialty: "Neurologist",
-      requestTime: "2025-04-24T16:45:00",
-      status: "verified",
-      email: "emily.rodriguez@example.com",
-      phone: "+1 (555) 456-7890",
-      licenseNumber: "MED45678901",
-      experience: "15 years",
-      qualification: "MD, Cardiology, Harvard Medical School"
-    },
-    {
-      id: 4,
-      name: "Dr. James Wilson",
-      specialty: "Dermatologist",
-      requestTime: "2025-04-25T11:20:00",
-      status: "pending",
-      email: "james.wilson@example.com",
-      phone: "+1 (555) 234-5678",
-      licenseNumber: "MED23456789",
-      experience: "15 years",
-      qualification: "MD, Cardiology, Harvard Medical School"
-    },
-    {
-      id: 5,
-      name: "Dr. Olivia Taylor",
-      specialty: "Orthopedic Surgeon",
-      requestTime: "2025-04-25T13:10:00",
-      status: "rejected",
-      email: "olivia.taylor@example.com",
-      phone: "+1 (555) 345-6789",
-      licenseNumber: "MED34567890",
-      experience: "15 years",
-      qualification: "MD, Cardiology, Harvard Medical School"
-    }
-  ]);
 
+  console.log("AdminDashboard rendering");
+
+
+  const { token } = useAuth();
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [doctors, setDoctors] = useState([]);
+
+  console.log(token, "logging token");
+
+  useEffect(() => {
+
+    if(token){
+      fetchDoctorProfileWithVerification()
+        .then((response) => {
+          setDoctors(response);
+          console.log("logging doctor and verification data", response);
+        })
+    }
+  },[]);
+
+  // calling the get_doctor_verification api
+  const fetchDoctorProfileWithVerification = async () => {
+    try {
+      const response = await fetch("http://localhost:8000/admin/dcotor-profile-with-doctor-verifications/", {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch doctor profile with doctor verification');
+      }
+
+      const data = await response.json()
+      // console.log("logging doctor profile data with verification",data);
+      return data;
+
+
+    } catch (err) {
+      setError('Error loading doctor profile with doctor verification. Please try again later.');
+      console.error('Error fetching doctor profile with doctor verification:', err);
+    } finally {
+      setLoading(false);
+    }
+
+  }
+
+
+
+
+
 
   // Format date function
   const formatDate = (dateString) => {
@@ -92,12 +85,31 @@ const AdminDashboard = () => {
   };
 
   // Handle verification status change
-  const handleVerificationChange = (doctorId, newStatus) => {
-    setDoctors(doctors.map(doctor => 
-      doctor.id === doctorId ? { ...doctor, status: newStatus } : doctor
-    ));
+  const handleVerificationChange = (doctorId, verificationId, newStatus) => {
+    setDoctors(doctors.map(doctor => {
+      if (doctor.id === doctorId) {
+        const updatedVerification = doctor.DoctorVerification?.map(verification => {
+          if (verification.id === verificationId) {
+            return {
+              ...verification,
+              status: newStatus,
+              processed_at: new Date().toISOString(),
+            };
+          }
+          return verification;
+        });
+  
+        return {
+          ...doctor,
+          DoctorVerification: updatedVerification,
+        };
+      }
+      return doctor;
+    }));
+  
     setShowProfileModal(false);
   };
+  
 
   // View doctor profile
   const viewDoctorProfile = (doctor) => {
@@ -113,7 +125,7 @@ const AdminDashboard = () => {
 
   // Get status badge style based on verification status
   const getStatusBadge = (status) => {
-    switch(status) {
+    switch (status) {
       case 'verified':
         return (
           <span className="flex items-center px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
@@ -145,15 +157,38 @@ const AdminDashboard = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="max-w-6xl mx-auto px-4 py-8 flex justify-center items-center min-h-screen">
+        <div className="text-center">
+          <div className="inline-block h-12 w-12 animate-spin rounded-full border-4  border-solid border-blue-600 border-r-transparent"></div>
+          <p className="mt-4 text-gray-600">Loading doctor profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+          <strong className="font-bold">Error! </strong>
+          <span className="block sm:inline">{error}</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
+
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
         <p className="text-gray-600">Manage doctor verification requests and track system status</p>
       </div>
-           
-      
+
+
       {/* Doctors Table */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <div className="overflow-x-auto">
@@ -180,6 +215,8 @@ const AdminDashboard = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {doctors.length > 0 ? (
                 doctors.map((doctor) => (
+                  
+
                   <tr key={doctor.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
@@ -187,19 +224,20 @@ const AdminDashboard = () => {
                           <User className="text-blue-600" size={20} />
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">{doctor.name}</div>
-                          <div className="text-sm text-gray-500">{doctor.email}</div>
+                          <div className="text-sm font-medium text-gray-900">{doctor.user?.name}</div>
+                          <div className="text-sm text-gray-500">{doctor?.user?.email}</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{doctor.specialty}</div>
+                      <div className="text-sm text-gray-900">{doctor.speciality}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{formatDate(doctor.requestTime)}</div>
+                    
+                      <div className="text-sm text-gray-900">{formatDate(doctor.DoctorVerification?.[0]?.requested_at)}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      {getStatusBadge(doctor.status)}
+                      {getStatusBadge(doctor.DoctorVerification?.[0]?.status)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button
@@ -223,9 +261,9 @@ const AdminDashboard = () => {
           </table>
         </div>
       </div>
-      
+
       {/* Doctor Profile Modal */}
-      <AdminDoctorProfile 
+      <AdminDoctorProfile
         doctor={selectedDoctor}
         showModal={showProfileModal}
         onClose={closeProfileModal}
@@ -242,7 +280,7 @@ const AdminDashboard = () => {
             <div className="ml-4">
               <h3 className="text-lg font-medium text-gray-900">Pending Verifications</h3>
               <p className="text-2xl font-semibold text-gray-700">
-                {doctors.filter(d => d.status === 'pending').length}
+                {doctors.filter(d => d.DoctorVerification?.[0]?.status === 'pending').length}
               </p>
             </div>
           </div>
@@ -256,7 +294,7 @@ const AdminDashboard = () => {
             <div className="ml-4">
               <h3 className="text-lg font-medium text-gray-900">Verified Doctors</h3>
               <p className="text-2xl font-semibold text-gray-700">
-                {doctors.filter(d => d.status === 'verified').length}
+                {doctors.filter(d => d.DoctorVerification?.[0]?.status === 'verified').length}
               </p>
             </div>
           </div>
@@ -270,7 +308,7 @@ const AdminDashboard = () => {
             <div className="ml-4">
               <h3 className="text-lg font-medium text-gray-900">Rejected Applications</h3>
               <p className="text-2xl font-semibold text-gray-700">
-                {doctors.filter(d => d.status === 'rejected').length}
+                {doctors.filter(d => d.DoctorVerification?.[0]?.status === 'rejected').length}
               </p>
             </div>
           </div>
@@ -278,6 +316,7 @@ const AdminDashboard = () => {
       </div>
     </div>
   );
+
 };
 
 export default AdminDashboard;

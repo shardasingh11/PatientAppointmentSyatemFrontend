@@ -89,10 +89,10 @@ const AdminDoctorProfile = ({
                     <User className="text-blue-600" size={40} />
                   </div>
                   <div className="mt-4 sm:mt-0 sm:ml-6 text-center sm:text-left">
-                    <p className="text-xl font-bold text-gray-900">{doctor.name}</p>
-                    <p className="text-md text-gray-600">{doctor.specialty}</p>
+                    <p className="text-xl font-bold text-gray-900">{doctor?.user?.name}</p>
+                    <p className="text-md text-gray-600">{doctor?.specialty}</p>
                     <div className="mt-2">
-                      {getStatusBadge(doctor.status)}
+                      {getStatusBadge(doctor?.DoctorVerification?.[0].status)}
                     </div>
                   </div>
                 </div>
@@ -102,19 +102,16 @@ const AdminDoctorProfile = ({
                 <dl className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
                   <div className="sm:col-span-1">
                     <dt className="text-sm font-medium text-gray-500">Email</dt>
-                    <dd className="mt-1 text-sm text-gray-900">{doctor.email}</dd>
+                    <dd className="mt-1 text-sm text-gray-900">{doctor?.user?.email}</dd>
                   </div>
+
                   <div className="sm:col-span-1">
-                    <dt className="text-sm font-medium text-gray-500">Phone</dt>
-                    <dd className="mt-1 text-sm text-gray-900">{doctor.phone}</dd>
-                  </div>
-                  <div className="sm:col-span-1">
-                    <dt className="text-sm font-medium text-gray-500">License Number</dt>
-                    <dd className="mt-1 text-sm text-gray-900">{doctor.licenseNumber}</dd>
+                    <dt className="text-sm font-medium text-gray-500">Consultation fee</dt>
+                    <dd className="mt-1 text-sm text-gray-900">${doctor?.consultation_fee}</dd>
                   </div>
                   <div className="sm:col-span-1">
                     <dt className="text-sm font-medium text-gray-500">Verification Request</dt>
-                    <dd className="mt-1 text-sm text-gray-900">{formatDate(doctor.requestTime)}</dd>
+                    <dd className="mt-1 text-sm text-gray-900">{formatDate(doctor.DoctorVerification?.[0]?.requested_at)}</dd>
                   </div>
                   <div className="sm:col-span-1">
                     <dt className="text-sm font-medium text-gray-500">Experience</dt>
@@ -122,8 +119,44 @@ const AdminDoctorProfile = ({
                   </div>
                   <div className="sm:col-span-1">
                     <dt className="text-sm font-medium text-gray-500">Qualification</dt>
-                    <dd className="mt-1 text-sm text-gray-900">{doctor.qualification}</dd>
+                    <dd className="mt-1 text-sm text-gray-900">{doctor?.qualifications?.[0]?.qualification_name}</dd>
+                  </div>  
+                  <div className="sm:col-span-1">
+                    <dt className="text-sm font-medium text-gray-500">Course Duration</dt>
+                    <dd className="mt-1 text-sm text-gray-900">{doctor?.qualifications?.[0]?.course_duration}</dd>
                   </div>
+
+                  <div className="sm:col-span-1">
+                    <dt className="text-sm font-medium text-gray-500">Qualification</dt>
+                    <dd className="mt-1 text-sm text-gray-900">{doctor?.qualifications?.[0]?.year_completed}</dd>
+                  </div> 
+                  <div className="sm:col-span-1">
+                    <dt className="text-sm font-medium text-gray-500">Institute</dt>
+                    <dd className="mt-1 text-sm text-gray-900">{doctor?.qualifications?.[0]?.institute?.name}</dd>
+                    
+                  </div>
+                  <div className='sm:col-span-1'>
+                    <dt className="text-sm font-medium text-gray-500">Institute Type</dt>
+                    <dd className="mt-1 text-sm text-gray-900">{doctor?.qualifications?.[0]?.institute?.type}</dd>
+                  </div>   
+
+                  <div className="sm:col-span-1">
+                    <dt className="text-sm font-medium text-gray-500">Clinic</dt>
+                    <dd className="mt-1 text-sm text-gray-900">{doctor?.clinics?.[0]?.clinic_info?.clinic_name}</dd>
+                  </div>
+                  <div className="sm:col-span-1">
+                    <dt className="text-sm font-medium text-gray-500">Clinic Phone no.</dt>
+                    <dd className="mt-1 text-sm text-gray-900">{doctor?.clinics?.[0]?.clinic_info?.clinic_phone}</dd>
+                  </div>
+                  <div className="sm:col-span-1">
+                    <dt className="text-sm font-medium text-gray-500">Clinic Address</dt>
+                    <dd className="mt-1 text-sm text-gray-900">
+                      {doctor?.clinics?.[0]?.clinic_address &&
+                        `${doctor.clinics[0].clinic_address.street_address}, ${doctor.clinics[0].clinic_address.area_name}, ${doctor.clinics[0].clinic_address.city}, ${doctor.clinics[0].clinic_address.state} - ${doctor.clinics[0].clinic_address.pincode}, ${doctor.clinics[0].clinic_address.country}`
+                      }
+                    </dd>
+                  </div>
+
                 </dl>
               </div>
 
@@ -132,7 +165,7 @@ const AdminDoctorProfile = ({
                   <button
                     type="button"
                     className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm"
-                    onClick={() => onStatusChange(doctor.id, 'verified')}
+                    onClick={() => onStatusChange(doctor.id, doctor.DoctorVerification[0].id, 'verified')}
                   >
                     <CheckSquare size={16} className="mr-2" />
                     Verify Doctor
@@ -143,7 +176,7 @@ const AdminDoctorProfile = ({
                   <button
                     type="button"
                     className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:w-auto sm:text-sm"
-                    onClick={() => onStatusChange(doctor.id, 'rejected')}
+                    onClick={() => onStatusChange(doctor.id, doctor.DoctorVerification[0].id, 'rejected')}
                   >
                     <X size={16} className="mr-2" />
                     Reject
@@ -154,7 +187,7 @@ const AdminDoctorProfile = ({
                   <button
                     type="button"
                     className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:w-auto sm:text-sm"
-                    onClick={() => onStatusChange(doctor.id, 'pending')}
+                    onClick={() => onStatusChange(doctor.id, doctor.DoctorVerification[0].id, 'pending')}
                   >
                     <Clock size={16} className="mr-2" />
                     Mark as Pending

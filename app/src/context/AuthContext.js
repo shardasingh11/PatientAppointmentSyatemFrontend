@@ -4,6 +4,8 @@ import { useCallback } from 'react';
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
+
+
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [token, setToken] = useState(null);
   const [user, setUser] = useState(null);
@@ -59,6 +61,7 @@ export const AuthProvider = ({ children }) => {
   }
 
   useEffect(() => {
+
     const storedToken = localStorage.getItem('access_token');
     if (storedToken) {
       fetchData(storedToken)
