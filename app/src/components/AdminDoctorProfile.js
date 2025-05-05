@@ -1,13 +1,69 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { User, CheckSquare, X, Clock } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const AdminDoctorProfile = ({
   doctor,
   onClose,
   showModal,
 }) => {
+
+
+  
+
+  const [verificationStatus, setVerificationStatus] = useState(doctor?.DoctorVerification?.[0]?.status || null);
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const { token } = useAuth();
+
+  const updateDoctorVerificationStatus = async () => {
+    if (!token) return null;
+    try {
+      console.log("logging verificationStatus", verificationStatus);
+      const response = await fetch(`http://localhost:8000/doctor/doctor-verification/${doctor?.DoctorVerification?.[0]?.id}`, {
+        method: 'PATCH',
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({"status": verificationStatus})
+
+      })
+
+      if(!response){
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Failed to Update Doctor Verification');
+      }
+
+      const data = await response.json();
+      return data;
+
+
+    } catch(err){
+      setError("Failed to Update Doctor Verification");
+      console.error(err);
+    }
+  }
+
+
+  useEffect(() => {
+    const defaultVerifcationStatus = doctor?.DoctorVerification?.[0]?.status;
+    if (verificationStatus  &&  verificationStatus !== defaultVerifcationStatus) {
+      setLoading(true);
+      updateDoctorVerificationStatus()
+        .then((response) => {
+          setLoading(false);
+          console.log("verification Updated");
+        })
+    }
+  }, [verificationStatus]);
+
   // Skip rendering if not showing or no doctor selected
   if (!showModal || !doctor) return null;
+
+  
 
   // Format date function
   const formatDate = (dateString) => {
@@ -21,10 +77,18 @@ const AdminDoctorProfile = ({
     });
   };
 
+
+  const handleVerificationStatusChange = (status) => {
+
+    setVerificationStatus(status);
+
+  }
+
+
   // Get status badge style based on verification status
   const getStatusBadge = (status) => {
     switch (status) {
-      case 'verified':
+      case 'approved':
         return (
           <span className="flex items-center px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
             <CheckSquare size={14} className="mr-1" />
@@ -54,6 +118,17 @@ const AdminDoctorProfile = ({
         );
     }
   };
+
+  if (error) {
+    return (
+        <div className="max-w-6xl mx-auto px-4 py-8">
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                <strong className="font-bold">Error! </strong>
+                <span className="block sm:inline">{error}</span>
+            </div>
+        </div>
+    );
+}
 
   return (
     <div className="fixed inset-0 z-10 overflow-y-auto">
@@ -119,7 +194,7 @@ const AdminDoctorProfile = ({
                   <div className="sm:col-span-1">
                     <dt className="text-sm font-medium text-gray-500">Qualification</dt>
                     <dd className="mt-1 text-sm text-gray-900">{doctor?.qualifications?.[0]?.qualification_name}</dd>
-                  </div>  
+                  </div>
                   <div className="sm:col-span-1">
                     <dt className="text-sm font-medium text-gray-500">Course Duration</dt>
                     <dd className="mt-1 text-sm text-gray-900">{doctor?.qualifications?.[0]?.course_duration}</dd>
@@ -128,16 +203,16 @@ const AdminDoctorProfile = ({
                   <div className="sm:col-span-1">
                     <dt className="text-sm font-medium text-gray-500">Qualification</dt>
                     <dd className="mt-1 text-sm text-gray-900">{doctor?.qualifications?.[0]?.year_completed}</dd>
-                  </div> 
+                  </div>
                   <div className="sm:col-span-1">
                     <dt className="text-sm font-medium text-gray-500">Institute</dt>
                     <dd className="mt-1 text-sm text-gray-900">{doctor?.qualifications?.[0]?.institute?.name}</dd>
-                    
+
                   </div>
                   <div className='sm:col-span-1'>
                     <dt className="text-sm font-medium text-gray-500">Institute Type</dt>
                     <dd className="mt-1 text-sm text-gray-900">{doctor?.qualifications?.[0]?.institute?.type}</dd>
-                  </div>   
+                  </div>
 
                   <div className="sm:col-span-1">
                     <dt className="text-sm font-medium text-gray-500">Clinic</dt>
@@ -160,30 +235,39 @@ const AdminDoctorProfile = ({
               </div>
 
               <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse gap-3">
-                {doctor.status !== 'verified' && (
+                {!doctor.is_verified && (
                   <button
                     type="button"
+                    disabled={loading ? true : false}
                     className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm"
+                    onClick={() => handleVerificationStatusChange("approved")}
                   >
                     <CheckSquare size={16} className="mr-2" />
+
                     Verify Doctor
                   </button>
                 )}
 
-                {doctor.status !== 'rejected' && (
+                {!doctor.is_verified && (
                   <button
                     type="button"
+                    disabled={loading ? true : false}
                     className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:w-auto sm:text-sm"
+                    onClick={() => handleVerificationStatusChange("rejected")}
+
                   >
                     <X size={16} className="mr-2" />
                     Reject
                   </button>
                 )}
 
-                {doctor.status !== 'pending' && (
+                {!doctor.is_verified && (
                   <button
                     type="button"
+                    disabled={loading ? true : false}
                     className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:w-auto sm:text-sm"
+                    onClick={() => handleVerificationStatusChange("pending")}
+
                   >
                     <Clock size={16} className="mr-2" />
                     Mark as Pending

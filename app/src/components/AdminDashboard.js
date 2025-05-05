@@ -157,7 +157,7 @@ const AdminDashboard = () => {
   // Get status badge style based on verification status
   const getStatusBadge = (status) => {
     switch (status) {
-      case 'verified':
+      case 'approved':
         return (
           <span className="flex items-center px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
             <CheckCircle size={14} className="mr-1" />
