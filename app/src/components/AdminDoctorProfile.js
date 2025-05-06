@@ -236,7 +236,7 @@ const AdminDoctorProfile = ({
               </div>
 
               <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse gap-3">
-                {true && (
+                {doctor?.DoctorVerification?.[0]?.status != "approved" && (
                   <button
                     type="button"
                     disabled={loading ? true : false}
@@ -249,7 +249,7 @@ const AdminDoctorProfile = ({
                   </button>
                 )}
 
-                {true && (
+                {doctor?.DoctorVerification?.[0]?.status !== "rejected" && (
                   <button
                     type="button"
                     disabled={loading ? true : false}
@@ -262,7 +262,7 @@ const AdminDoctorProfile = ({
                   </button>
                 )}
 
-                {true && (
+                {doctor?.DoctorVerification?.[0]?.status !== "pending" && (
                   <button
                     type="button"
                     disabled={loading ? true : false}
