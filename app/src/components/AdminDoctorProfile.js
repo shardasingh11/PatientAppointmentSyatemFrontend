@@ -6,6 +6,7 @@ const AdminDoctorProfile = ({
   doctor,
   onClose,
   showModal,
+  onChangeVerification
 }) => {
 
 
@@ -21,7 +22,6 @@ const AdminDoctorProfile = ({
   const updateDoctorVerificationStatus = async () => {
     if (!token) return null;
     try {
-      console.log("logging verificationStatus", verificationStatus);
       const response = await fetch(`http://localhost:8000/doctor/doctor-verification/${doctor?.DoctorVerification?.[0]?.id}`, {
         method: 'PATCH',
         headers: {
@@ -49,13 +49,14 @@ const AdminDoctorProfile = ({
 
 
   useEffect(() => {
+    
     const defaultVerifcationStatus = doctor?.DoctorVerification?.[0]?.status;
     if (verificationStatus  &&  verificationStatus !== defaultVerifcationStatus) {
       setLoading(true);
       updateDoctorVerificationStatus()
         .then((response) => {
           setLoading(false);
-          console.log("verification Updated");
+          onChangeVerification(response.status);
         })
     }
   }, [verificationStatus]);
@@ -164,9 +165,9 @@ const AdminDoctorProfile = ({
                   </div>
                   <div className="mt-4 sm:mt-0 sm:ml-6 text-center sm:text-left">
                     <p className="text-xl font-bold text-gray-900">{doctor?.user?.name}</p>
-                    <p className="text-md text-gray-600">{doctor?.specialty}</p>
+                    <p className="text-md text-gray-600">{doctor?.speciality}</p>
                     <div className="mt-2">
-                      {getStatusBadge(doctor?.DoctorVerification?.[0].status)}
+                      {getStatusBadge(doctor?.DoctorVerification?.[0]?.status)}
                     </div>
                   </div>
                 </div>
@@ -235,7 +236,7 @@ const AdminDoctorProfile = ({
               </div>
 
               <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse gap-3">
-                {!doctor.is_verified && (
+                {true && (
                   <button
                     type="button"
                     disabled={loading ? true : false}
@@ -248,7 +249,7 @@ const AdminDoctorProfile = ({
                   </button>
                 )}
 
-                {!doctor.is_verified && (
+                {true && (
                   <button
                     type="button"
                     disabled={loading ? true : false}
@@ -261,7 +262,7 @@ const AdminDoctorProfile = ({
                   </button>
                 )}
 
-                {!doctor.is_verified && (
+                {true && (
                   <button
                     type="button"
                     disabled={loading ? true : false}

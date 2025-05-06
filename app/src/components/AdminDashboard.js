@@ -23,7 +23,7 @@ const AdminDashboard = () => {
   const [error, setError] = useState(null);
   const [doctors, setDoctors] = useState([]);
   const [filteredDoctors, setFilteredDoctors] = useState([]);
-
+  const [verificationResponseStatus, setVerificationResponseStatus] = useState(null);
 
 
   
@@ -50,7 +50,7 @@ const AdminDashboard = () => {
           console.log("logging doctor and verification data", response);
         })
     }
-  }, [token]);
+  }, [token, verificationResponseStatus]);
 
   // calling the get_doctor_verification api
   const fetchDoctorProfileWithVerification = async () => {
@@ -87,6 +87,12 @@ const AdminDashboard = () => {
     applyFilters();
   }, [searchTerm, statusFilter, specialtyFilter, doctors]);
 
+  useEffect(() => {
+    const updatedDoctor = doctors.find((doctor) => doctor?.id == selectedDoctor?.id);
+    setSelectedDoctor(updatedDoctor);
+
+  },[doctors])
+
   // Apply all filters
   const applyFilters = () => {
     let filtered = [...doctors];
@@ -114,9 +120,6 @@ const AdminDashboard = () => {
 
     setFilteredDoctors(filtered);
   };
-
-
-
 
 
 
@@ -379,6 +382,7 @@ const AdminDashboard = () => {
         doctor={selectedDoctor}
         showModal={showProfileModal}
         onClose={closeProfileModal}
+        onChangeVerification={setVerificationResponseStatus}
       />
 
       {/* Summary Stats */}
@@ -405,7 +409,7 @@ const AdminDashboard = () => {
             <div className="ml-4">
               <h3 className="text-lg font-medium text-gray-900">Verified Doctors</h3>
               <p className="text-2xl font-semibold text-gray-700">
-                {doctors.filter(d => d.DoctorVerification?.[0]?.status === 'verified').length}
+                {doctors.filter(d => d.DoctorVerification?.[0]?.status === 'approved').length}
               </p>
             </div>
           </div>
