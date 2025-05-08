@@ -9,6 +9,7 @@ import CreateDoctorProfile from './components/CreateDoctorProfile.js';
 import "./index.css"
 import DoctorProfile from './components/DoctorProfile.js';
 import LoginPage from './components/LoginPage.js';
+import AdminDashboard from './components/AdminDashboard.js';
 
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
             <Route path='/create-doctor-profile' element={<CreateDoctorProfile />}/>
             <Route path='/doctor-profile' element={<DoctorProfile />}/>
             <Route path='/login-page' element={<LoginPage />}/>
+            <Route path='/admin-dashboard' element={<AdminDashboard />}/>
 
 
           </Routes>

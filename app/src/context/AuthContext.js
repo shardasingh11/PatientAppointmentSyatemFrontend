@@ -4,10 +4,13 @@ import { useCallback } from 'react';
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
+
+
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [token, setToken] = useState(null);
   const [user, setUser] = useState(null);
   const [expiryTime, setExpiryTime] = useState(localStorage.getItem('expiryTime') || null);
+  const [refreshUserTrigger, setRefreshUserTrigger] = useState(0);
 
   const checkTokenExpiration = useCallback(() => {
     if (expiryTime) {
@@ -58,9 +61,12 @@ export const AuthProvider = ({ children }) => {
   }
 
   useEffect(() => {
-    const storedToken = localStorage.getItem('access_token');
-    if (storedToken) {
-      fetchData(storedToken)
+
+    // const storedToken = localStorage.getItem('access_token');
+    console.log("logging from the useEffect of AuthContext"); 
+    if (token) {
+      console.log("inside if");
+      fetchData(token)
         .then(userData => {
           setUser(userData);
         })
@@ -68,16 +74,24 @@ export const AuthProvider = ({ children }) => {
           console.error(error);
         });
     }
-  }, [token])
+  }, [refreshUserTrigger, token])
 
   useEffect(() => {
     // Check if user is logged in when the app loads
-    const storedToken = localStorage.getItem('access_token');
-    if (storedToken) {
-      setToken(storedToken);
-      setIsLoggedIn(true);
+    console.log("logging useEffect below user api");
+    if (!token) {
+      const storedToken = localStorage.getItem('access_token');
+      if (storedToken) {
+        setToken(storedToken);
+        setIsLoggedIn(true);
+      }
     }
-  }, []);
+  },[]);
+
+  // Function to refresh user data
+  const refreshUserData = () => {
+    setRefreshUserTrigger(prev => prev + 1);
+  }
 
   // Login function
   const login = (newToken, newExpiryTime) => {
@@ -98,7 +112,7 @@ export const AuthProvider = ({ children }) => {
     setExpiryTime(null);
   };
   return (
-    <AuthContext.Provider value={{ isLoggedIn, token, login, logout, user }}>
+    <AuthContext.Provider value={{ isLoggedIn, token, login, logout, user, refreshUserData }}>
       {children}
     </AuthContext.Provider>
   );

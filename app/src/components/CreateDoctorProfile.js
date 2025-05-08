@@ -1,17 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate} from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Save, Award, MapPin, Building, User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 
 const CreateDoctorProfile = () => {
     const navigate = useNavigate();
-    const { userId } = useParams(); // Get userId from URL parameter
     const [currentStep, setCurrentStep] = useState(1);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(false);
-    const { token } = useAuth();
+    const { token, refreshUserData } = useAuth();
 
     // Form data state reflecting the DoctorCreate schema structure
     const [formData, setFormData] = useState({
@@ -85,6 +84,8 @@ const CreateDoctorProfile = () => {
 
     // Handle form submission
     const handleSubmit = async (e) => {
+        console.log("Form submission triggered at step:", currentStep);
+
         e.preventDefault();
         setIsSubmitting(true);
         setError(null);
@@ -126,12 +127,13 @@ const CreateDoctorProfile = () => {
                 throw new Error(errorData.detail || 'Failed to create doctor profile');
             }
 
-            const data = await response.json()
+            const data = await response.json();
+            refreshUserData();
 
             setSuccess(true);
             // Redirect to doctor profile page after successful submission
             setTimeout(() => {
-                navigate(`/doctor-profile/${data.doctor.id}`);
+                navigate(`/doctor-profile`);
             }, 2000);
         } catch (err) {
             setError(err.message);
@@ -670,6 +672,13 @@ const CreateDoctorProfile = () => {
 
         return null;
     };
+
+    // const preventEnterKeySubmission = (e) => {
+    //     if (e.key === 'Enter' && currentStep !== 5) {
+    //       e.preventDefault();
+    //       return false;
+    //     }
+    //   };
 
     // Navigation buttons
     const renderNavButtons = () => {

@@ -132,13 +132,26 @@ const Navbar = () => {
                     )
                     }
 
-                    <Link
+                    {user?.user_role === "admin" ? (
+                      <Link
+                       to="/admin-dashboard"
+                       className={`block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 ${location.pathname === '/admin-dashboard' ? 'bg-gray-100' : ''
+                         }`}
+                     >
+                       Dashboard
+                     </Link>
+                    ):(
+                      <Link
                       to="/appointments"
                       className={`block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 ${location.pathname === '/appointments' ? 'bg-gray-100' : ''
                         }`}
                     >
                       My Appointments
                     </Link>
+                    )
+                    }
+
+                   
                     <button
                       onClick={logout}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
