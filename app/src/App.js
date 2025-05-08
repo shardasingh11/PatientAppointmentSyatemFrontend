@@ -10,6 +10,7 @@ import "./index.css"
 import DoctorProfile from './components/DoctorProfile.js';
 import LoginPage from './components/LoginPage.js';
 import AdminDashboard from './components/AdminDashboard.js';
+import DoctorsListForPatient from './components/DoctorsListForPatient.js';
 
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
             <Route path='/doctor-profile' element={<DoctorProfile />}/>
             <Route path='/login-page' element={<LoginPage />}/>
             <Route path='/admin-dashboard' element={<AdminDashboard />}/>
+            <Route path='/doctors-list-in-patient' element={<DoctorsListForPatient />}/>
 
 
           </Routes>

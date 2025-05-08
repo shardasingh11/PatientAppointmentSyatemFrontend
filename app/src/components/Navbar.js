@@ -162,9 +162,22 @@ const Navbar = () => {
                       </div>
                     </button>
                   </div>
-                )}
+                )} 
               </div>
             )}
+             {isLoggedIn &&(
+              user?.user_role == "patient" &&(
+                <Link
+                  to="/doctors-list-in-patient"
+                  className={`py-4 px-3 transition duration-300 rounded ${location.pathname === '/doctors-list-in-patient' ? 'bg-gray-700 text-white' : 'hover:bg-gray-700'
+                    }`}
+                >
+                  Doctors
+                </Link>
+              )
+             )
+             
+             }
 
           </div>
 
