@@ -14,11 +14,13 @@ import {
 } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 
 const DoctorProfile = () => {
 
     const { token, isLoggedIn } = useAuth();
+    const navigate = useNavigate();
     const [doctor, setDoctor] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -48,6 +50,9 @@ const DoctorProfile = () => {
     useEffect(() => {
         if (!isLoggedIn) {
             setLoading(true);
+            setTimeout(() => {
+                navigate(`/login-page`);
+            }, 1000);
         }
     }, [isLoggedIn])
 

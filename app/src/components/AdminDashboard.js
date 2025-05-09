@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import AdminDoctorProfile from './AdminDoctorProfile';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 
 const AdminDashboard = () => {
@@ -24,6 +25,7 @@ const AdminDashboard = () => {
   const [doctors, setDoctors] = useState([]);
   const [filteredDoctors, setFilteredDoctors] = useState([]);
   const [verificationResponseStatus, setVerificationResponseStatus] = useState(null);
+  const navigate = useNavigate();
 
 
   
@@ -37,7 +39,13 @@ const AdminDashboard = () => {
 
   useEffect(() => {
 
-    if (token) {
+    if (!token) {
+      setLoading(true);
+            setTimeout(() =>{
+                navigate(`/login-page`);
+            }, 1000);
+      return;
+    }
       fetchDoctorProfileWithVerification()
         .then((response) => {
           setDoctors(response);
@@ -49,7 +57,7 @@ const AdminDashboard = () => {
           setSpecialties(uniqueSpecialties);
           console.log("logging doctor and verification data", response);
         })
-    }
+   
   }, [token, verificationResponseStatus]);
 
   // calling the get_doctor_verification api
@@ -190,7 +198,8 @@ const AdminDashboard = () => {
         );
     }
   };
-
+  
+  
   if (loading) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-8 flex justify-center items-center min-h-screen">
@@ -212,6 +221,8 @@ const AdminDashboard = () => {
       </div>
     );
   }
+
+
 
   return (
 
