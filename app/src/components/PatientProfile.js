@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { User, Phone, Mail, MapPin, Calendar, Activity, Droplet, Ruler, Weight, AlertTriangle, Heart, Phone as PhoneIcon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 
 
@@ -10,6 +11,7 @@ const PatientProfile = () => {
     const [error, setError] = useState(null);
     const [activeTab, setActiveTab] = useState('personal');
     const { token } = useAuth();
+    const navigate = useNavigate();
 
     const fetchData = async (accessToken) => {
         try {
@@ -39,6 +41,9 @@ const PatientProfile = () => {
         console.log("Token in PatientProfile", token);
         if (!token) {
             setLoading(true);
+            setTimeout(() =>{
+                navigate(`/login-page`);
+            }, 1000);
             return;
         }
 

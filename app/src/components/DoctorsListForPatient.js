@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { User, Award, Clock, MapPin, Phone, Calendar, Check, X } from 'lucide-react';
+import { useNavigate } from "react-router-dom";
 
 
 
 
 const DoctorsListForPatient = () => {
 
+    const navigate = useNavigate();
     const [doctors, setDoctors] = useState(null);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -43,14 +45,20 @@ const DoctorsListForPatient = () => {
     } 
 
     useEffect(() => {
-        if(token){
+        if(!token){
+            setLoading(true);
+            setTimeout(() =>{
+                navigate(`/login-page`);
+            }, 1000);
+            return;
+        }
             fetchDoctorsList()
                 .then((response) => {
                     setLoading(false);
                     setDoctors(response);
                     console.log("Doctors List for patients", response);
                 })
-        }
+        
 
     },[token]);
 
