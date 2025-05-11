@@ -9,6 +9,7 @@ export const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [token, setToken] = useState(null);
   const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [expiryTime, setExpiryTime] = useState(localStorage.getItem('expiryTime') || null);
   const [refreshUserTrigger, setRefreshUserTrigger] = useState(0);
 
@@ -84,6 +85,7 @@ export const AuthProvider = ({ children }) => {
       if (storedToken) {
         setToken(storedToken);
         setIsLoggedIn(true);
+        setIsLoading(false);
       }
     }
   },[]);
@@ -99,6 +101,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('expiryTime', newExpiryTime.toISOString());
     setToken(newToken);
     setIsLoggedIn(true);
+    setIsLoading(false);
     setExpiryTime(newExpiryTime.toISOString());
   };
 
@@ -112,7 +115,7 @@ export const AuthProvider = ({ children }) => {
     setExpiryTime(null);
   };
   return (
-    <AuthContext.Provider value={{ isLoggedIn, token, login, logout, user, refreshUserData }}>
+    <AuthContext.Provider value={{ isLoggedIn, token, login, logout, user, refreshUserData, isLoading }}>
       {children}
     </AuthContext.Provider>
   );
