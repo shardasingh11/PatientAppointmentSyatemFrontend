@@ -215,7 +215,7 @@ const DoctorsListForPatient = () => {
                                         {/* Action Buttons */}
                                         <div className="flex gap-2">
                                             <Link
-                                                to={`/book-appointment/${25}`}
+                                                to={`/book-appointment/${doctor.id}`}
                                                 className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition"
                                             >
                                                 Book Appointment

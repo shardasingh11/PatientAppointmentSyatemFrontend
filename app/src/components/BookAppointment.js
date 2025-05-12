@@ -1,4 +1,4 @@
-import { useState, useEffect} from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Calendar, Clock, ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react';
 import { useNavigate, useParams } from "react-router-dom";
@@ -7,31 +7,49 @@ const BookAppointment = () => {
     const navigate = useNavigate();
     const { token, isLoading: isAuthLoading } = useAuth();
     const { doctorId } = useParams(); // Assuming doctor_id is passed as URL param
-    
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [doctorSlots, setDoctorSlots] = useState(null);
     const [selectedSlot, setSelectedSlot] = useState(null);
+    const [showSelectedSlot, setShowSelectedSlot] = useState(null);
+    const [selectedDate, setSelectedDate] = useState(null);
     const [currentMonth, setCurrentMonth] = useState(new Date());
+    const [createAppointmentSuccess, setCreateAppointmentSuccess] = useState(false);
+    const [visitReason, setVisitReason] = useState("");
+
+    // Create ref for time slots section
+    // const timeSlotsRef = useRef(null);
 
     // Calculate 30 days from today
     const today = new Date();
+    today.setHours(0, 0, 0, 0); // Set time to beginning of day for accurate comparison
     const maxDate = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
 
     useEffect(() => {
-        if(isAuthLoading) return;
+        if (isAuthLoading) return;
         if (!token) {
             setLoading(true);
-            setTimeout(()=>{
+            setTimeout(() => {
                 navigate('/login-page');
             }, 2000);
-           
+
             return;
         }
         if (doctorId) {
             fetchDoctorSlots();
         }
     }, [token, doctorId, isAuthLoading]);
+
+    useEffect(() => {
+        
+        if(selectedSlot){
+            sendSelectedSlot()
+            .then((res) => {
+                console.log("appointement created", res);
+            })
+        }
+        
+    }, [selectedSlot])
 
     // Fetch doctor's available slots
     const fetchDoctorSlots = async () => {
@@ -52,6 +70,7 @@ const BookAppointment = () => {
 
             const data = await response.json();
             setDoctorSlots(data);
+
             setLoading(false);
         } catch (err) {
             setError(err.message || "Failed to fetch available slots. Please try again later.");
@@ -59,7 +78,38 @@ const BookAppointment = () => {
             console.error(err);
         }
     };
-   
+
+    
+    //send appointment data to backendend
+    const sendSelectedSlot = async () => {
+        try{
+            const response = await fetch(`http://localhost:8000/appointment/create-appointment/${doctorId}`,{
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(selectedSlot),
+            });
+
+            if(!response.ok){
+                const errorData = await response.json();
+                throw new Error(errorData.detail || 'Failed to create appointment');
+            }
+
+            const data = await response.json()
+            if(data){
+                setCreateAppointmentSuccess(true);
+            }
+            setTimeout(() =>{
+                setCreateAppointmentSuccess(false);
+            }, 3000);
+            return data;
+
+        }catch(err){
+            setError(err.message || "Failed to create appointment. Please try again later.");
+        }
+    }
 
     // Helper function to parse date string from API format (YY-MM-DD)
     const parseApiDate = (dateStr) => {
@@ -70,20 +120,30 @@ const BookAppointment = () => {
         return new Date(year, month, day);
     };
 
+    // Format date to API format (YY-MM-DD)
+    const formatDateToApiFormat = (date) => {
+        const year = date.getFullYear().toString().substring(2); // Get last 2 digits
+        const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Month is 0-indexed
+        const day = date.getDate().toString().padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
     // Get slots for a specific date
     const getSlotsForDate = (date) => {
         if (!doctorSlots) return [];
-        
-        const dateString = date.toISOString().split('T')[0];
-        const formattedDate = `${dateString.slice(2).replace(/-/g, '-')}`; // Convert YYYY-MM-DD to YY-MM-DD
-        
+
+        const formattedDate = formatDateToApiFormat(date);
+
         const slotData = doctorSlots.slots.find(slot => slot.date === formattedDate);
         return slotData ? slotData.time_slot : [];
     };
 
     // Check if a date has available slots
     const hasAvailableSlots = (date) => {
-        return getSlotsForDate(date).length > 0;
+        if (!doctorSlots) return false;
+
+        const formattedDate = formatDateToApiFormat(date);
+        return doctorSlots.slots.some(slot => slot.date === formattedDate);
     };
 
     // Check if date is within 30 days from today
@@ -93,15 +153,33 @@ const BookAppointment = () => {
 
     // Handle slot selection
     const handleSlotSelect = (date, timeSlot) => {
+        const [start_time, end_time] = timeSlot.split("-");
+        const selectedDateObj = new Date(date);
+        const dateString = selectedDateObj.toLocaleDateString('sv-SE');
+
         const slotInfo = {
-            doctor_id: doctorId,
-            date: date.toISOString().split('T')[0],
-            day: date.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase(),
-            time_slot: timeSlot,
-            formatted_date: date.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+            date: dateString,
+            start_time: start_time,
+            end_time: end_time,
+            reason_for_visit: visitReason
         };
-        
+
+        const formatted_date = date.toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+
         setSelectedSlot(slotInfo);
+        setShowSelectedSlot({...slotInfo, formatted_date})
+
+        // Scroll to the reason for visit section
+        const reasonSection = document.getElementById('reason-section');
+        if (reasonSection) {
+            reasonSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
         console.log('Selected Slot:', slotInfo);
     };
 
@@ -124,17 +202,14 @@ const BookAppointment = () => {
         const startDayOfWeek = firstDay.getDay();
 
         const days = [];
-        
         // Add empty cells for days before the first day of the month
         for (let i = 0; i < startDayOfWeek; i++) {
             days.push(null);
         }
-        
         // Add all days of the month
         for (let day = 1; day <= daysInMonth; day++) {
             days.push(new Date(year, monthNumber, day));
         }
-        
         return days;
     };
 
@@ -181,11 +256,9 @@ const BookAppointment = () => {
                     >
                         <ChevronLeft size={20} />
                     </button>
-                    
                     <h2 className="text-xl font-semibold text-gray-800">
                         {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                     </h2>
-                    
                     <button
                         onClick={() => navigateMonth(1)}
                         className="p-2 hover:bg-gray-100 rounded-full transition"
@@ -210,33 +283,45 @@ const BookAppointment = () => {
                             return <div key={index} className="h-12" />;
                         }
 
-                        const isToday = day.toDateString() === today.toDateString();
-                        const isPast = day < today;
-                        const isSelectable = isWithin30Days(day) && !isPast;
-                        const hasSlots = hasAvailableSlots(day);
-                        const isBeyond30Days = day > maxDate;
+                        // Reset hours to ensure accurate date comparison
+                        const dateCopy = new Date(day);
+                        dateCopy.setHours(0, 0, 0, 0);
+
+                        const isToday = dateCopy.getTime() === today.getTime();
+                        const isPast = dateCopy < today;
+                        const isSelectable = isWithin30Days(dateCopy) && !isPast;
+                        const hasSlots = hasAvailableSlots(dateCopy);
+                        const isBeyond30Days = dateCopy > maxDate;
+
+                        // Make dates with slots clickable
+                        const handleDateClick = () => {
+                            if (isSelectable && hasSlots) {
+                                // Set the selected date to view slots
+                                setSelectedDate(dateCopy);
+                                // Scroll to time slots
+                                const timeSlotsElement = document.getElementById('time-slots-section');
+                                if (timeSlotsElement) {
+                                    timeSlotsElement.scrollIntoView({ behavior: 'smooth' });
+                                }
+                            }
+                        };
 
                         return (
                             <div
                                 key={index}
-                                className={`h-12 rounded-lg border cursor-default relative ${
-                                    isToday ? 'border-blue-600 bg-blue-50' : 'border-gray-200'
-                                } ${
-                                    isPast ? 'bg-gray-100 text-gray-400' : ''
-                                } ${
-                                    isSelectable && hasSlots ? 'hover:bg-green-50 border-green-200' : ''
-                                } ${
-                                    isBeyond30Days ? 'bg-gray-100 text-gray-400' : ''
-                                }`}
+                                onClick={handleDateClick}
+                                className={`h-12 rounded-lg border relative flex items-center justify-center ${isToday ? 'border-blue-600 bg-blue-50' : 'border-gray-200'
+                                    } ${isPast ? 'bg-gray-100 text-gray-400' : ''
+                                    } ${isSelectable && hasSlots ? 'hover:bg-green-50 border-green-200 cursor-pointer' : 'cursor-default'
+                                    } ${isBeyond30Days ? 'bg-gray-100 text-gray-400' : ''
+                                    }`}
                             >
                                 <span className="absolute top-1 left-2 text-sm">
                                     {day.getDate()}
                                 </span>
-                                
                                 {isSelectable && hasSlots && (
                                     <span className="absolute bottom-1 right-1 w-2 h-2 bg-green-500 rounded-full" />
                                 )}
-                                
                                 {isBeyond30Days && (
                                     <span className="absolute bottom-1 right-1 text-xs text-red-400">×</span>
                                 )}
@@ -261,54 +346,97 @@ const BookAppointment = () => {
                     </div>
                 </div>
             </div>
+            {createAppointmentSuccess && (
+              <div className="mb-6 mt-4 p-4 bg-green-100 text-green-700 rounded-lg flex items-center">
+                <div className="flex-shrink-0 w-8 h-8 bg-green-200 rounded-full flex items-center justify-center mr-3">
+                  <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                  </svg>
+                </div>
+                <span>Appointment Created successfully!.</span>
+              </div>
+            )}
+
+
+             {/* Reason for Visit */}
+            <div id="reason-section" className="mt-8">
+                <h3 className="text-xl font-semibold text-gray-800 mb-4">Reason for Visit</h3>
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <div className="mb-4">
+                        <label htmlFor="visitReason" className="block text-sm font-medium text-gray-700 mb-2">
+                            Please tell us the reason for your appointment
+                        </label>
+                        <textarea
+                            id="visitReason"
+                            rows="4"
+                            value={visitReason}
+                            onChange={(e) => setVisitReason(e.target.value)}
+                            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                            placeholder="Briefly describe your symptoms or reason for visit..."
+                        ></textarea>
+                    </div>
+                </div>
+            </div>
 
             {/* Time Slots Section */}
-            <div className="mt-8">
+            <div id="time-slots-section" className="mt-8">
                 <h3 className="text-xl font-semibold text-gray-800 mb-4">Available Time Slots</h3>
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                    {days.filter(day => day && isWithin30Days(day) && !day < today && hasAvailableSlots(day)).length === 0 ? (
+                    {!selectedDate ? (
+                        <div className="text-center py-8 text-gray-500">
+                            <Calendar className="mx-auto mb-2" size={24} />
+                            <p>Please select a date with available slots from the calendar above</p>
+                        </div>
+                    ) : !hasAvailableSlots(selectedDate) ? (
                         <div className="text-center py-8 text-gray-500">
                             <AlertCircle className="mx-auto mb-2" size={24} />
-                            <p>No available slots for the selected period</p>
-                            <p className="text-sm mt-1">Please select a different date range</p>
+                            <p>No available slots for the selected date</p>
+                            <p className="text-sm mt-1">Please select a different date</p>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {days.filter(day => day && isWithin30Days(day) && !day < today && hasAvailableSlots(day)).map(day => (
-                                <div key={day.toISOString()} className="border border-gray-200 rounded-lg p-4">
-                                    <h4 className="font-medium text-gray-800 mb-3">
-                                        {day.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
-                                    </h4>
-                                    <div className="grid grid-cols-2 gap-2">
-                                        {getSlotsForDate(day).map(slot => (
-                                            <button
-                                                key={slot}
-                                                onClick={() => handleSlotSelect(day, slot)}
-                                                className={`p-2 text-sm rounded border transition ${
-                                                    selectedSlot?.date === day.toISOString().split('T')[0] && 
-                                                    selectedSlot?.time_slot === slot
-                                                        ? 'bg-blue-600 text-white border-blue-600'
-                                                        : 'border-gray-300 hover:border-blue-400 hover:bg-blue-50'
-                                                }`}
-                                            >
-                                                <Clock className="inline mr-1" size={12} />
-                                                {slot}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                            ))}
+                        <div>
+                            <div className="mb-4 flex justify-between items-center">
+                                <h4 className="font-medium text-gray-800">
+                                    Slots for {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                                </h4>
+                                <button
+                                    onClick={() => setSelectedDate(null)}
+                                    className="text-sm text-blue-600 hover:underline flex items-center"
+                                >
+                                    <ChevronLeft size={16} className="mr-1" />
+                                    Show all dates
+                                </button>
+                            </div>
+                            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
+                                {getSlotsForDate(selectedDate).map(slot => (
+                                    <button
+                                        key={slot}
+                                        onClick={() => handleSlotSelect(selectedDate, slot)}
+                                        className={`p-2 text-sm rounded border transition ${selectedSlot?.date === selectedDate.toISOString().split('T')[0] &&
+                                                selectedSlot?.time_slot === slot
+                                                ? 'bg-blue-600 text-white border-blue-600'
+                                                : 'border-gray-300 hover:border-blue-400 hover:bg-blue-50'
+                                            }`}
+                                    >
+                                        <Clock className="inline mr-1" size={12} />
+                                        {slot}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                     )}
                 </div>
             </div>
-
+        
             {/* Selected Slot Display */}
             {selectedSlot && (
                 <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <h4 className="font-medium text-blue-800 mb-2">Selected Appointment</h4>
+                    <h4 className="font-medium text-blue-800 mb-2">Selected Appointment Summary</h4>
+                    <p className="text-blue-700 mb-2">
+                        <strong>Date & Time:</strong> {showSelectedSlot.formatted_date} at {showSelectedSlot.start_time}-{showSelectedSlot.end_time}
+                    </p>
                     <p className="text-blue-700">
-                        {selectedSlot.formatted_date} at {selectedSlot.time_slot}
+                        <strong>Reason for Visit:</strong> {visitReason ? visitReason : "Not specified"}
                     </p>
                 </div>
             )}
