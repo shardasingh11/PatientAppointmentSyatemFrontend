@@ -104,7 +104,7 @@ const Navbar = () => {
                     )
                     }
 
-                    {user?.user_role === "doctor" &&(
+                    {user?.user_role === "doctor" && (
                       user?.is_profile_created ? (
                         <Link
                           to="/doctor-profile"
@@ -117,7 +117,7 @@ const Navbar = () => {
                           </div>
                         </Link>
 
-                      ):(
+                      ) : (
                         <Link
                           to="/create-doctor-profile"
                           className={`block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 ${location.pathname === '/create-doctor-profile' ? 'bg-gray-100' : ''
@@ -134,24 +134,35 @@ const Navbar = () => {
 
                     {user?.user_role === "admin" ? (
                       <Link
-                       to="/admin-dashboard"
-                       className={`block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 ${location.pathname === '/admin-dashboard' ? 'bg-gray-100' : ''
-                         }`}
-                     >
-                       Dashboard
-                     </Link>
-                    ):(
-                      <Link
-                      to="/appointments"
-                      className={`block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 ${location.pathname === '/appointments' ? 'bg-gray-100' : ''
-                        }`}
-                    >
-                      My Appointments
-                    </Link>
+                        to="/admin-dashboard"
+                        className={`block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 ${location.pathname === '/admin-dashboard' ? 'bg-gray-100' : ''
+                          }`}
+                      >
+                        Dashboard
+                      </Link>
+                    ) : (
+                      user?.user_role == "patient" ? (
+                        <Link
+                          to="/patient-appointment"
+                          className={`block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 ${location.pathname === '/appointments' ? 'bg-gray-100' : ''
+                            }`}
+                        >
+                          My Appointments
+                        </Link>
+                      ) : (
+                        <Link
+                          to="/doctor-appointment"
+                          className={`block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 ${location.pathname === '/appointments' ? 'bg-gray-100' : ''
+                            }`}
+                        >
+                          My Appointments
+                        </Link>
+                      )
+
                     )
                     }
 
-                   
+
                     <button
                       onClick={logout}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -162,11 +173,11 @@ const Navbar = () => {
                       </div>
                     </button>
                   </div>
-                )} 
+                )}
               </div>
             )}
-             {isLoggedIn &&(
-              user?.user_role == "patient" &&(
+            {isLoggedIn && (
+              user?.user_role == "patient" && (
                 <Link
                   to="/doctors-list-in-patient"
                   className={`py-4 px-3 transition duration-300 rounded ${location.pathname === '/doctors-list-in-patient' ? 'bg-gray-700 text-white' : 'hover:bg-gray-700'
@@ -175,9 +186,9 @@ const Navbar = () => {
                   Doctors
                 </Link>
               )
-             )
-             
-             }
+            )
+
+            }
 
           </div>
 
