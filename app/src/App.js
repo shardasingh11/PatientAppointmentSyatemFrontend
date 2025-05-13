@@ -12,6 +12,7 @@ import LoginPage from './components/LoginPage.js';
 import AdminDashboard from './components/AdminDashboard.js';
 import DoctorsListForPatient from './components/DoctorsListForPatient.js';
 import BookAppointment from './components/BookAppointment.js';
+import ShowPatientAppointments from './components/ShowPatientAppointments.js';
 
 
 function App() {
@@ -30,6 +31,7 @@ function App() {
             <Route path='/admin-dashboard' element={<AdminDashboard />}/>
             <Route path='/doctors-list-in-patient' element={<DoctorsListForPatient />}/>
             <Route path='/book-appointment/:doctorId' element={<BookAppointment />}/>
+            <Route path='/patient-appointment' element={<ShowPatientAppointments />}/>
 
 
           </Routes>
