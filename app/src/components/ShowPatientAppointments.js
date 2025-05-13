@@ -89,9 +89,9 @@ const ShowPatientAppointments = () => {
     const filteredAppointments = appointments && appointments.length > 0 
         ? appointments.filter(appointment => {
             if (activeTab === 'all') return true;
-            if (activeTab === 'upcoming') return appointment.appointment_status === 'SCHEDULED';
-            if (activeTab === 'completed') return appointment.appointment_status === 'COMPLETED';
-            if (activeTab === 'cancelled') return appointment.appointment_status === 'CANCELLED';
+            if (activeTab === 'upcoming') return appointment.appointment_status === 'scheduled';
+            if (activeTab === 'completed') return appointment.appointment_status === 'completed';
+            if (activeTab === 'cancelled') return appointment.appointment_status === 'cancelled';
             return true;
         })
         : [];
@@ -114,19 +114,19 @@ const ShowPatientAppointments = () => {
     // Get status badge based on appointment status
     const getStatusBadge = (status, paymentStatus) => {
         switch (status) {
-            case 'SCHEDULED':
+            case 'scheduled':
                 return (
                     <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full flex items-center">
                         <Clock size={12} className="mr-1" /> Upcoming
                     </span>
                 );
-            case 'COMPLETED':
+            case 'completed':
                 return (
                     <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full flex items-center">
                         <CheckCircle size={12} className="mr-1" /> Completed
                     </span>
                 );
-            case 'CANCELLED':
+            case 'cancelled':
                 return (
                     <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full flex items-center">
                         <XCircle size={12} className="mr-1" /> Cancelled
@@ -144,19 +144,19 @@ const ShowPatientAppointments = () => {
     // Get payment status badge
     const getPaymentBadge = (paymentStatus) => {
         switch (paymentStatus) {
-            case 'PAID':
+            case 'paid':
                 return (
                     <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full flex items-center">
                         <CheckCircle size={12} className="mr-1" /> Paid
                     </span>
                 );
-            case 'PENDING':
+            case 'pending':
                 return (
                     <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full flex items-center">
                         <AlertCircle size={12} className="mr-1" /> Payment Pending
                     </span>
                 );
-            case 'FAILED':
+            case 'failed':
                 return (
                     <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full flex items-center">
                         <XCircle size={12} className="mr-1" /> Payment Failed
