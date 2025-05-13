@@ -11,6 +11,7 @@ import DoctorProfile from './components/DoctorProfile.js';
 import LoginPage from './components/LoginPage.js';
 import AdminDashboard from './components/AdminDashboard.js';
 import DoctorsListForPatient from './components/DoctorsListForPatient.js';
+import BookAppointment from './components/BookAppointment.js';
 
 
 function App() {
@@ -28,6 +29,7 @@ function App() {
             <Route path='/login-page' element={<LoginPage />}/>
             <Route path='/admin-dashboard' element={<AdminDashboard />}/>
             <Route path='/doctors-list-in-patient' element={<DoctorsListForPatient />}/>
+            <Route path='/book-appointment/:doctorId' element={<BookAppointment />}/>
 
 
           </Routes>
